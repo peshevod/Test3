@@ -12,6 +12,7 @@ import android.view.View;
 import android.view.Menu;
 import android.widget.Button;
 import android.widget.ProgressBar;
+import android.widget.Toast;
 
 import com.example.test3.databinding.NavHeaderMainBinding;
 import com.google.android.material.snackbar.Snackbar;
@@ -34,6 +35,8 @@ import com.example.test3.databinding.ActivityMainBinding;
 
 import org.jetbrains.annotations.NotNull;
 
+import java.io.IOException;
+
 public class MainActivity extends AppCompatActivity {
 
     private AppBarConfiguration mAppBarConfiguration;
@@ -49,7 +52,7 @@ public class MainActivity extends AppCompatActivity {
 
         binding = ActivityMainBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
-        connected=true;
+        connected=false;
         setSupportActionBar(binding.appBarMain.toolbar);
         binding.appBarMain.fab.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -97,8 +100,9 @@ public class MainActivity extends AppCompatActivity {
                     @Override
                     public void onClick(View v) {
                         spinner.setVisibility(View.VISIBLE);
-                    }
-
+                    TLS13 tls=new TLS13( sharedPreferences.getString("server_string", "mm304.asuscomm.com"), Integer.parseInt(sharedPreferences.getString("server_port", "51443")) );
+                    tls.execute();
+                }
         });
     }
 
