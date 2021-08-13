@@ -12,6 +12,7 @@ import android.view.View;
 import android.view.Menu;
 import android.widget.Button;
 import android.widget.ProgressBar;
+import android.widget.Toast;
 
 import com.example.test3.databinding.NavHeaderMainBinding;
 import com.google.android.material.snackbar.Snackbar;
@@ -34,6 +35,13 @@ import com.example.test3.databinding.ActivityMainBinding;
 
 import org.jetbrains.annotations.NotNull;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.net.URLConnection;
+
 public class MainActivity extends AppCompatActivity {
 
     private AppBarConfiguration mAppBarConfiguration;
@@ -42,6 +50,7 @@ public class MainActivity extends AppCompatActivity {
     public boolean connected;
     SharedPreferences sharedPreferences;
     private ProgressBar spinner;
+    Button btn;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -49,7 +58,7 @@ public class MainActivity extends AppCompatActivity {
 
         binding = ActivityMainBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
-        connected=true;
+        connected=false;
         setSupportActionBar(binding.appBarMain.toolbar);
         binding.appBarMain.fab.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -58,9 +67,9 @@ public class MainActivity extends AppCompatActivity {
                         .setAction("Action", null).show();
             }
         });
-        SharedPreferences sharedPreferences =
+        sharedPreferences =
                 PreferenceManager.getDefaultSharedPreferences(this /* Activity context */);
-        Button btn=findViewById(R.id.button);
+        btn=findViewById(R.id.button);
         spinner = (ProgressBar)findViewById(R.id.progressBar1);
         spinner.setVisibility(View.GONE);
         DrawerLayout drawer = binding.drawerLayout;
@@ -81,13 +90,7 @@ public class MainActivity extends AppCompatActivity {
                     public void onDestinationChanged(@NonNull NavController controller, @NonNull NavDestination destination, @org.jetbrains.annotations.Nullable Bundle arguments) {
                         switch (destination.getId()) {
                             case R.id.nav_home:
-                                String my_server=sharedPreferences.getString("server_name", "YOUR SERVER");
-                                String conn= connected ? " - connected" : " - not connected";
-                                Spannable ss = new SpannableString(my_server+conn);
-                                ss.setSpan(new ForegroundColorSpan(Color.WHITE), 0, my_server.length(), Spannable.SPAN_INCLUSIVE_INCLUSIVE);
-                                ss.setSpan(new ForegroundColorSpan( connected ? Color.GREEN : Color.RED), my_server.length(), conn.length()+my_server.length(), Spannable.SPAN_INCLUSIVE_INCLUSIVE);
-                                getSupportActionBar().setTitle(ss);
-                                btn.setText(connected ? "Disconnect" : "Connect");
+                                setConnLabel();
                                 break;
                         }
                     }
@@ -97,9 +100,46 @@ public class MainActivity extends AppCompatActivity {
                     @Override
                     public void onClick(View v) {
                         spinner.setVisibility(View.VISIBLE);
+                        if(!connected)
+                        {
+                            connect();
+                        }
                     }
 
         });
+    }
+
+    public void setConnLabel()
+    {
+        String my_server=sharedPreferences.getString("server_name", "YOUR SERVER");
+        String conn= connected ? " - connected" : " - not connected";
+        Spannable ss = new SpannableString(my_server+conn);
+        ss.setSpan(new ForegroundColorSpan(Color.WHITE), 0, my_server.length(), Spannable.SPAN_INCLUSIVE_INCLUSIVE);
+        ss.setSpan(new ForegroundColorSpan( connected ? Color.GREEN : Color.RED), my_server.length(), conn.length()+my_server.length(), Spannable.SPAN_INCLUSIVE_INCLUSIVE);
+        getSupportActionBar().setTitle(ss);
+        btn.setText(connected ? "Disconnect" : "Connect");
+    }
+
+    public boolean connect()
+    {
+        URL url = null;
+        URLConnection con=null;
+        String s="https://"+ sharedPreferences.getString("server_url", "mm304.asuscomm.com")+":"+
+                sharedPreferences.getString("server_port", "51443");
+        try {
+            url = new URL(s);
+            con = url.openConnection();
+            con.connect();
+        } catch (MalformedURLException e) {
+            Toast.makeText(getApplicationContext(), e.getMessage(), Toast.LENGTH_LONG).show();
+            return false;
+        } catch (IOException e) {
+            if(s!=null) return false;
+            Toast.makeText(getApplicationContext(), e.getMessage(), Toast.LENGTH_LONG).show();
+            return false;
+        }
+        Toast.makeText(getApplicationContext(), "Connected!", Toast.LENGTH_LONG).show();
+        return true;
     }
 
     @Override
