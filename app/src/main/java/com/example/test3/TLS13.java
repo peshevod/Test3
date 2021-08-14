@@ -1,6 +1,7 @@
 package com.example.test3;
 
 import android.os.AsyncTask;
+import android.util.Log;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -45,7 +46,7 @@ public class TLS13 extends AsyncTask {
     public void sendRequest() throws IOException {
         OutputStreamWriter outputStreamWriter = new OutputStreamWriter(sslSocket.getOutputStream());
         PrintWriter printWriter = new PrintWriter(new BufferedWriter(outputStreamWriter));
-        printWriter.println("GET /test-url HTTP/1.1\r\n");
+        printWriter.println("GET / HTTP/1.1\r\n");
         printWriter.flush();
     }
     
@@ -56,8 +57,7 @@ public class TLS13 extends AsyncTask {
                         sslSocket.getInputStream()));
             String responseData;
             while ((responseData = in.readLine()) != null)
-                System.out.println(responseData);
-
+                Log.i("TLS",responseData);
     }
 
     public void test() throws IOException
