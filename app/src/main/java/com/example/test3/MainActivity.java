@@ -37,6 +37,9 @@ import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
 
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.SSLSocketFactory;
+
 public class MainActivity extends AppCompatActivity {
 
     private AppBarConfiguration mAppBarConfiguration;
@@ -45,6 +48,14 @@ public class MainActivity extends AppCompatActivity {
     public boolean connected;
     SharedPreferences sharedPreferences;
     private ProgressBar spinner;
+    public SSLContext ctx=null;
+    public MainActivity main;
+    public SSLSocketFactory factory=null;
+    public MainActivity()
+    {
+        super();
+        main=this;
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -100,7 +111,7 @@ public class MainActivity extends AppCompatActivity {
                     @Override
                     public void onClick(View v) {
                         spinner.setVisibility(View.VISIBLE);
-                    TLS13 tls=new TLS13( sharedPreferences.getString("server_string", "mm304.asuscomm.com"), Integer.parseInt(sharedPreferences.getString("server_port", "51443")) );
+                    TLS13 tls=new TLS13(main, sharedPreferences.getString("server_string", "mm304.asuscomm.com"), Integer.parseInt(sharedPreferences.getString("server_port", "51443")) );
                     tls.execute();
                 }
         });
