@@ -3,6 +3,20 @@ package com.example.test3;
 import android.os.AsyncTask;
 import android.util.Log;
 
+import androidx.lifecycle.MutableLiveData;
+
+import com.android.volley.AuthFailureError;
+import com.android.volley.DefaultRetryPolicy;
+import com.android.volley.Request;
+import com.android.volley.RequestQueue;
+import com.android.volley.Response;
+import com.android.volley.VolleyError;
+import com.android.volley.toolbox.HurlStack;
+import com.android.volley.toolbox.StringRequest;
+import com.android.volley.toolbox.Volley;
+import com.example.test3.ui.home.HomeFragment;
+import com.example.test3.ui.home.HomeViewModel;
+
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.FileInputStream;
@@ -11,14 +25,18 @@ import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.net.InetAddress;
+import java.net.MalformedURLException;
 import java.net.Socket;
 import java.net.URL;
 import java.net.UnknownHostException;
+import java.security.KeyManagementException;
 import java.security.KeyStore;
 import java.security.NoSuchAlgorithmException;
 import java.security.Provider;
 import java.security.Security;
 import java.security.cert.Certificate;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Set;
 
 import javax.net.ssl.HttpsURLConnection;
@@ -28,126 +46,121 @@ import javax.net.ssl.SSLPeerUnverifiedException;
 import javax.net.ssl.SSLSocket;
 import javax.net.ssl.SSLSocketFactory;
 
-public class TLS13 extends AsyncTask {
+public class TLS13 extends AsyncTask<Boolean,Void,Boolean> {
 
+    final String TAG = "TLS13";
     private String server_string;
     private int server_port = 443;
-    private static final String TLSV1_3 = "TLSv1.3";
-    private static final String TLS_AES_128_GCM_SHA256 = "TLS_AES_128_GCM_SHA256";
-    private SSLSocket sslSocket;
     private MainActivity main;
-    private HttpsURLConnection conn;
     private String s;
+    boolean err=false;
+    public MutableLiveData<Boolean> connected;
+    public boolean ready;
+    HomeViewModel homeViewModel;
+    private HurlStack stack;
+    private RequestQueue queue;
 
-    public TLS13(MainActivity main, String server_string, int server_port)
+    public TLS13(MainActivity main, HomeViewModel homeViewModel, String server_string, int server_port)
     {
         this.server_string=server_string;
         this.server_port=server_port;
         this.main=main;
+        this.homeViewModel=homeViewModel;
         s="https://"+server_string+":"+server_port+"/";
     }
 
-    public void getSslSocket() throws IOException {
+    public boolean CreateConnection(){
 
-        final String TAG = "TLS";
         try {
-/*            KeyManagerFactory kmf;
-            KeyStore ks;
-            char[] passphrase = "passphrase".toCharArray();*/
-
            main.ctx = SSLContext.getInstance("TLSv1.3");
-/*           kmf = KeyManagerFactory.getInstance("SunX509");
-            ks = KeyStore.getInstance("JKS");
-
-            ks.load(new FileInputStream("testkeys"), passphrase);
-
-            kmf.init(ks, passphrase);
-            main.ctx.init(kmf.getKeyManagers(), null, null);*/
-            main.ctx.init(null, null, null);
-            main.factory = new MySSLSocketFactory(main.ctx);
-        } catch (Exception e) {
+           main.ctx.init(null, null, null);
+           main.factory = new MySSLSocketFactory(main.ctx);
+        } catch (KeyManagementException | NoSuchAlgorithmException e) {
             Log.e(TAG, e.getMessage());
-            return;
+            return false;
         }
-        Log.i(TAG, "socket factory created");
+        Log.i(TAG, " MySSLSocketFactory successfully created");
+        stack = new HurlStack(null, main.factory);
+        queue = Volley.newRequestQueue(main,stack);
+        if(queue!=null)
+        {
+            Log.i(TAG, " Request Queue successfully created");
+            return true;
+        }
+        else
+        {
+            Log.e(TAG, " Failure to create Request Queue");
+            return false;
+        }
+    }
 
-/*       Provider[] providers = Security.getProviders();
-        for (Provider provider : providers) {
-            Log.i("TLS","provider: "+provider.getName());
-            Set<Provider.Service> services = provider.getServices();
-            for (Provider.Service service : services) {
-                Log.i("TLS","  algorithm: "+service.getType()+" "+service.getAlgorithm());
+    public boolean testSendRequest(){
+        // Request a string response from the provided URL.
+        StringRequest stringRequest = new StringRequest(Request.Method.GET, s,
+                new Response.Listener<String>() {
+                    @Override
+                    public void onResponse(String response) {
+                        Log.i(TAG,"Response is: "+ response);
+                        homeViewModel.setConnected(true);
+                     }
+                }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError error) {
+                Log.e(TAG,"That didn't work!");
+                homeViewModel.setConnected(false);
             }
-            Set<Object> props=provider.keySet();
-            for(Object key : props)
-            {
-                Log.i("TLS","key "+key.toString()+" = "+provider.getProperty(key.toString()));
+        })
+        {
+            @Override
+            public Map<String, String> getHeaders() throws AuthFailureError {
+                Map<String, String> head = new HashMap<String, String>();
+                head.put("Host","mm304.asuscomm.com");
+                head.put("Accept", "text/html");
+                return head;
             }
-        }*/
-
-
-/*        SSLSocketFactory sslSocketFactory = (SSLSocketFactory) SSLSocketFactory.getDefault();
-        sslSocket = (SSLSocket) sslSocketFactory.createSocket(server_string, server_port);
-
-        //Setting the TSLv1.3 protocol
-        sslSocket.setEnabledProtocols(new String[]{TLSV1_3});
-
-        //Setting the Cipher: TLS_AES_128_GCM_SHA256
-        sslSocket.setEnabledCipherSuites(new String[]{TLS_AES_128_GCM_SHA256});
-
-        //Handshake
-        sslSocket.startHandshake();*/
-        URL url=new URL(s);
-        conn= (HttpsURLConnection) url.openConnection();
-        conn.setSSLSocketFactory(main.factory);
+        };
+        Log.i(TAG,"stringRequest ready");
+        // Add the request to the RequestQueue.
+        stringRequest.setRetryPolicy(new DefaultRetryPolicy(3000,DefaultRetryPolicy.DEFAULT_MAX_RETRIES,DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
+        stringRequest.setTag(TAG);
+        queue.add(stringRequest);
+        Log.i(TAG,"stringRequest added");
+        return true;
     }
 
-    public void sendRequest() throws IOException {
-
-        /*        OutputStreamWriter outputStreamWriter = new OutputStreamWriter(sslSocket.getOutputStream());*/
-        conn.setDoOutput(true);
-        conn.setDoInput(true);
-        conn.setRequestMethod("GET");
-        conn.setRequestProperty("Host","mm304.asuscomm.com");
-        conn.setRequestProperty("Accept", "text/html");
-//        conn.connect();
-        OutputStreamWriter outputStreamWriter = new OutputStreamWriter(conn.getOutputStream());
-        PrintWriter printWriter = new PrintWriter(new BufferedWriter(outputStreamWriter));
-        printWriter.println("body");
-       //        printWriter.println("GET / HTTP/1.1");
-//        printWriter.println("\r\nHost: mm304.asuscomm.com\r\nAccept: text/html\r\n");
-        printWriter.flush();
-        printWriter.close();
-        outputStreamWriter.close();
-        Log.i("TLS","sent");
-    }
-    
-    public void readResponse() throws IOException {
-        BufferedReader in = new BufferedReader(
-                new InputStreamReader(
-                        conn.getInputStream()));
-/*                        sslSocket.getInputStream()),4096);*/
-            String responseData;
-            while ((responseData = in.readLine()) != null)
-            Log.i("TLS",responseData);
-            in.close();
-    }
-
-    public void test() throws IOException
+    public boolean test()
     {
-        getSslSocket();
-        sendRequest();
-        readResponse();
+        if(!homeViewModel.getConnected().getValue()) {
+            if (!CreateConnection())
+            {
+                return false;
+            }
+        }
+        if(!testSendRequest())
+        {
+            return false;
+        }
+        Log.i("TLS13", "test return true");
+        return true;
+    }
+
+    public Boolean disconnect()
+    {
+//        queue.cancelAll(TAG);
+        return false;
     }
 
     @Override
-    protected Object doInBackground(Object... arg0){
-        try {
-            test();
-        } catch (IOException e)
+    protected void onPostExecute(Boolean result){
+        Log.i("TLS13", "set connected");
+    }
+
+    @Override
+    protected Boolean doInBackground(Boolean... arg0){
+        if(arg0[0].booleanValue()) return test();
+        else
         {
-            Log.e("TLS", e.getMessage());
+             return disconnect();
         }
-        return null;
     }
 }

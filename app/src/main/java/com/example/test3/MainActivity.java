@@ -7,6 +7,7 @@ import android.os.Bundle;
 import android.text.Spannable;
 import android.text.SpannableString;
 import android.text.style.ForegroundColorSpan;
+import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.Menu;
@@ -14,7 +15,10 @@ import android.widget.Button;
 import android.widget.ProgressBar;
 import android.widget.Toast;
 
+import com.android.volley.RequestQueue;
+import com.android.volley.toolbox.HurlStack;
 import com.example.test3.databinding.NavHeaderMainBinding;
+import com.example.test3.ui.home.HomeViewModel;
 import com.google.android.material.snackbar.Snackbar;
 import com.google.android.material.navigation.NavigationView;
 
@@ -22,6 +26,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.ActionBar;
 import androidx.fragment.app.FragmentManager;
+import androidx.lifecycle.MutableLiveData;
 import androidx.navigation.NavController;
 import androidx.navigation.NavDestination;
 import androidx.navigation.Navigation;
@@ -45,12 +50,16 @@ public class MainActivity extends AppCompatActivity {
     private AppBarConfiguration mAppBarConfiguration;
     private ActivityMainBinding binding;
     private NavHeaderMainBinding navbind;
+//    public MutableLiveData<Boolean> connected = new MutableLiveData<>();
     public boolean connected;
     SharedPreferences sharedPreferences;
     private ProgressBar spinner;
     public SSLContext ctx=null;
     public MainActivity main;
     public SSLSocketFactory factory=null;
+    public TLS13 tls;
+    public HomeViewModel homeViewModel;
+
     public MainActivity()
     {
         super();
@@ -74,9 +83,10 @@ public class MainActivity extends AppCompatActivity {
         });
         SharedPreferences sharedPreferences =
                 PreferenceManager.getDefaultSharedPreferences(this /* Activity context */);
-        Button btn=findViewById(R.id.button);
-        spinner = (ProgressBar)findViewById(R.id.progressBar1);
-        spinner.setVisibility(View.GONE);
+//        Button btn=findViewById(R.id.button);
+//        spinner = (ProgressBar)findViewById(R.id.progressBar1);
+//        spinner.setVisibility(View.GONE);
+
         DrawerLayout drawer = binding.drawerLayout;
         NavigationView navigationView = binding.navView;
         // Passing each menu ID as a set of Ids because each
@@ -85,6 +95,7 @@ public class MainActivity extends AppCompatActivity {
                 R.id.nav_home, R.id.nav_gallery, R.id.nav_slideshow)
                 .setDrawerLayout(drawer)
                 .build();
+        TLS13 tls=new TLS13(this, homeViewModel, sharedPreferences.getString("server_string", "mm304.asuscomm.com"), Integer.parseInt(sharedPreferences.getString("server_port", "51443")) );
         NavController navController = Navigation.findNavController(this, R.id.nav_host_fragment_content_main);
         NavigationUI.setupActionBarWithNavController(this, navController, mAppBarConfiguration);
         NavigationUI.setupWithNavController(navigationView, navController);
@@ -95,26 +106,21 @@ public class MainActivity extends AppCompatActivity {
                     public void onDestinationChanged(@NonNull NavController controller, @NonNull NavDestination destination, @org.jetbrains.annotations.Nullable Bundle arguments) {
                         switch (destination.getId()) {
                             case R.id.nav_home:
-                                String my_server=sharedPreferences.getString("server_name", "YOUR SERVER");
-                                String conn= connected ? " - connected" : " - not connected";
-                                Spannable ss = new SpannableString(my_server+conn);
-                                ss.setSpan(new ForegroundColorSpan(Color.WHITE), 0, my_server.length(), Spannable.SPAN_INCLUSIVE_INCLUSIVE);
-                                ss.setSpan(new ForegroundColorSpan( connected ? Color.GREEN : Color.RED), my_server.length(), conn.length()+my_server.length(), Spannable.SPAN_INCLUSIVE_INCLUSIVE);
-                                getSupportActionBar().setTitle(ss);
-                                btn.setText(connected ? "Disconnect" : "Connect");
                                 break;
                         }
                     }
         });
-        btn.setOnClickListener(
+/*        btn.setOnClickListener(
                 new View.OnClickListener(){
                     @Override
                     public void onClick(View v) {
-                        spinner.setVisibility(View.VISIBLE);
+//                    spinner.setVisibility(View.VISIBLE);
+                    get
                     TLS13 tls=new TLS13(main, sharedPreferences.getString("server_string", "mm304.asuscomm.com"), Integer.parseInt(sharedPreferences.getString("server_port", "51443")) );
                     tls.execute();
+//                    spinner.setVisibility(View.GONE);
                 }
-        });
+        });*/
     }
 
     @Override
