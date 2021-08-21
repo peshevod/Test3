@@ -19,6 +19,8 @@ import com.android.volley.RequestQueue;
 import com.android.volley.toolbox.HurlStack;
 import com.example.test3.databinding.NavHeaderMainBinding;
 import com.example.test3.ui.home.HomeViewModel;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
 import com.google.android.material.snackbar.Snackbar;
 import com.google.android.material.navigation.NavigationView;
 
@@ -37,6 +39,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.preference.PreferenceManager;
 
 import com.example.test3.databinding.ActivityMainBinding;
+import com.google.firebase.messaging.FirebaseMessaging;
 
 import org.jetbrains.annotations.NotNull;
 
@@ -58,6 +61,7 @@ public class MainActivity extends AppCompatActivity {
     public MainActivity main;
     public SSLSocketFactory factory=null;
     public TLS13 tls;
+    final String TAG="TLS13";
     public HomeViewModel homeViewModel;
 
     public MainActivity()
@@ -95,6 +99,20 @@ public class MainActivity extends AppCompatActivity {
                 R.id.nav_home, R.id.nav_gallery, R.id.nav_slideshow)
                 .setDrawerLayout(drawer)
                 .build();
+        FirebaseMessaging.getInstance().getToken()
+                .addOnCompleteListener(new OnCompleteListener<String>() {
+                    @Override
+                    public void onComplete(@NonNull Task<String> task) {
+                        if (!task.isSuccessful()) {
+                            Log.i(TAG, "Fetching FCM registration token failed", task.getException());
+                            return;
+                        }
+
+                        // Get new FCM registration token
+                        String token = task.getResult();
+                        Log.i(TAG,"token "+token);
+                    }
+                });
         TLS13 tls=new TLS13(this, homeViewModel, sharedPreferences.getString("server_string", "mm304.asuscomm.com"), Integer.parseInt(sharedPreferences.getString("server_port", "51443")) );
         NavController navController = Navigation.findNavController(this, R.id.nav_host_fragment_content_main);
         NavigationUI.setupActionBarWithNavController(this, navController, mAppBarConfiguration);
