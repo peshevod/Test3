@@ -121,11 +121,11 @@ public class HomeFragment extends Fragment {
                     progressBar1.setVisibility(View.VISIBLE);
                     if(!homeViewModel.getConnected().getValue()) {
                         goToLogin=true;
-                        tls.execute(true);
+                        tls.execute("CONNECT");
                     }
                     else
                     {
-                        tls.execute(false);
+                        tls.execute("DISCONNECT");
                         homeViewModel.setConnected(false);
                     }
 
@@ -176,7 +176,7 @@ public class HomeFragment extends Fragment {
                 btn.setText(b.booleanValue() ? "Disconnect" : "Connect");
                 setServerTitle();
                 progressBar1.setVisibility(View.GONE);
-                if(b && goToLogin)
+                if(b && goToLogin && main.login_state==MainActivity.BASIC_LOGIN_REQUIRED)
                 {
                     goToLogin=false;
                     Navigation.findNavController(main, R.id.nav_host_fragment_content_main).navigate(R.id.loginFragment);

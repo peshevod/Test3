@@ -6,6 +6,8 @@ import androidx.lifecycle.ViewModel;
 
 import android.util.Patterns;
 
+import com.example.test3.MainActivity;
+import com.example.test3.TLS13;
 import com.example.test3.data.LoginRepository;
 import com.example.test3.data.Result;
 import com.example.test3.data.model.LoggedInUser;
@@ -16,6 +18,7 @@ public class LoginViewModel extends ViewModel {
     private MutableLiveData<LoginFormState> loginFormState = new MutableLiveData<>();
     private MutableLiveData<LoginResult> loginResult = new MutableLiveData<>();
     private LoginRepository loginRepository;
+    private TLS13 tls;
 
     LoginViewModel(LoginRepository loginRepository) {
         this.loginRepository = loginRepository;
@@ -31,8 +34,13 @@ public class LoginViewModel extends ViewModel {
 
     public void login(String username, String password) {
         // can be launched in a separate asynchronous job
-        Result<LoggedInUser> result = loginRepository.login(username, password);
 
+        boolean result = loginRepository.login(tls,username, password);
+    }
+
+
+   public void setResult(Result<LoggedInUser> result)
+   {
         if (result instanceof Result.Success) {
             LoggedInUser data = ((Result.Success<LoggedInUser>) result).getData();
             loginResult.setValue(new LoginResult(new LoggedInUserView(data.getDisplayName())));
@@ -66,5 +74,10 @@ public class LoginViewModel extends ViewModel {
     // A placeholder password validation check
     private boolean isPasswordValid(String password) {
         return password != null && password.trim().length() > 5;
+    }
+
+    public void setTLS(TLS13 tls)
+    {
+        this.tls=tls;
     }
 }

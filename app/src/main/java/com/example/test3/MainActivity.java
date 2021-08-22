@@ -19,6 +19,7 @@ import com.android.volley.RequestQueue;
 import com.android.volley.toolbox.HurlStack;
 import com.example.test3.databinding.NavHeaderMainBinding;
 import com.example.test3.ui.home.HomeViewModel;
+import com.example.test3.ui.login.LoginViewModel;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.android.material.snackbar.Snackbar;
@@ -63,6 +64,13 @@ public class MainActivity extends AppCompatActivity {
     public TLS13 tls;
     final String TAG="TLS13";
     public HomeViewModel homeViewModel;
+    public LoginViewModel loginViewModel;
+    public final static int NOT_CONNECTED=0;
+    public final static int NOT_LOGGED_IN=1;
+    public final static int BASIC_LOGIN_REQUIRED=2;
+    public final static int LOGGED_IN=3;
+
+    public int login_state=NOT_CONNECTED;
 
     public MainActivity()
     {
@@ -114,6 +122,10 @@ public class MainActivity extends AppCompatActivity {
                     }
                 });
         TLS13 tls=new TLS13(this, homeViewModel, sharedPreferences.getString("server_string", "mm304.asuscomm.com"), Integer.parseInt(sharedPreferences.getString("server_port", "51443")) );
+        
+        loginViewModel.setTLS(tls);
+//        Log.i("TLS13","TLS "+main.tls.toString());
+        Log.i(TAG,tls.toString());
         NavController navController = Navigation.findNavController(this, R.id.nav_host_fragment_content_main);
         NavigationUI.setupActionBarWithNavController(this, navController, mAppBarConfiguration);
         NavigationUI.setupWithNavController(navigationView, navController);

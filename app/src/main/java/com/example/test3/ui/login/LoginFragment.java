@@ -10,6 +10,7 @@ import androidx.fragment.app.Fragment;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.util.Log;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -21,6 +22,7 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.example.test3.MainActivity;
 import com.example.test3.databinding.FragmentLoginBinding;
 
 import com.example.test3.R;
@@ -29,6 +31,7 @@ public class LoginFragment extends Fragment {
 
     private LoginViewModel loginViewModel;
     private FragmentLoginBinding binding;
+    public MainActivity main;
 
     @Nullable
     @Override
@@ -147,4 +150,18 @@ public class LoginFragment extends Fragment {
         super.onDestroyView();
         binding = null;
     }
+    @Override
+    public void onCreate(Bundle savedInstanceState) {
+
+        super.onCreate(savedInstanceState);
+        main=(MainActivity)getActivity();
+        main.loginViewModel=loginViewModel;
+//        loginViewModel.setTLS(main.tls);
+//        Log.i("TLS13","TLS "+main.tls.toString());
+
+    }
+ /*   public void onActivityCreated (Bundle savedInstanceState) {
+
+        super.onActivityCreated(savedInstanceState);
+    }*/
 }
