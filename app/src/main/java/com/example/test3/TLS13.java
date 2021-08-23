@@ -6,16 +6,6 @@ import android.util.Log;
 
 import androidx.lifecycle.MutableLiveData;
 
-import com.android.volley.AuthFailureError;
-import com.android.volley.DefaultRetryPolicy;
-import com.android.volley.Header;
-import com.android.volley.Request;
-import com.android.volley.RequestQueue;
-import com.android.volley.Response;
-import com.android.volley.VolleyError;
-import com.android.volley.toolbox.HurlStack;
-import com.android.volley.toolbox.StringRequest;
-import com.android.volley.toolbox.Volley;
 import com.example.test3.data.Result;
 import com.example.test3.data.model.LoggedInUser;
 import com.example.test3.ui.home.HomeFragment;
@@ -63,8 +53,6 @@ public class TLS13 extends AsyncTask<String,Void,Boolean> {
     public MutableLiveData<Boolean> connected;
     public boolean ready;
     HomeViewModel homeViewModel;
-    private HurlStack stack;
-    private RequestQueue queue;
     public String basic=null;
     static final int DISCONNECT=0;
     static final int CONNECT=1;
@@ -80,7 +68,7 @@ public class TLS13 extends AsyncTask<String,Void,Boolean> {
         s="https://"+server_string+":"+server_port+"/";
     }
 
-    public boolean CreateConnection(){
+/*    public boolean CreateConnection(){
 
         try {
            main.ctx = SSLContext.getInstance("TLSv1.3");
@@ -91,7 +79,7 @@ public class TLS13 extends AsyncTask<String,Void,Boolean> {
             return false;
         }
         Log.i(TAG, " MySSLSocketFactory successfully created");
-        stack = new HurlStack(null, main.factory);
+       stack = new HurlStack(null, main.factory);
         queue = Volley.newRequestQueue(main,stack);
         if(queue!=null)
         {
@@ -226,17 +214,17 @@ public class TLS13 extends AsyncTask<String,Void,Boolean> {
         if(cmd.equalsIgnoreCase("CONNECT")) Log.i("TLS13", "set connected");
     }
 
-    @Override
+*/    @Override
     protected Boolean doInBackground(String... arg){
         cmd=arg[0];
         Log.i(TAG, "cmd="+arg[0]);
-        if(arg[0].equalsIgnoreCase("CONNECT")) return test();
+      /*  if(arg[0].equalsIgnoreCase("CONNECT")) return test();
         else if(arg[0].equalsIgnoreCase("DISCONNECT"))  return disconnect();
         else if(arg[0].equalsIgnoreCase("LOGIN"))
         {
             Log.i(TAG, "tls enter");
             return login(arg[1],arg[2]);
-        }
+        }*/
         return false;
     }
 }

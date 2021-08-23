@@ -15,8 +15,6 @@ import android.widget.Button;
 import android.widget.ProgressBar;
 import android.widget.Toast;
 
-import com.android.volley.RequestQueue;
-import com.android.volley.toolbox.HurlStack;
 import com.example.test3.databinding.NavHeaderMainBinding;
 import com.example.test3.ui.home.HomeViewModel;
 import com.example.test3.ui.login.LoginViewModel;
@@ -41,11 +39,31 @@ import androidx.preference.PreferenceManager;
 
 import com.example.test3.databinding.ActivityMainBinding;
 import com.google.firebase.messaging.FirebaseMessaging;
+import com.ok2c.hc.android.http.AndroidHttpClientConnectionManagerBuilder;
 
+import org.apache.http.HttpClientConnection;
+import org.apache.http.HttpHost;
+import org.apache.http.client.protocol.HttpClientContext;
+import org.apache.http.config.Registry;
+import org.apache.http.config.RegistryBuilder;
+import org.apache.http.config.SocketConfig;
+import org.apache.http.conn.ConnectionPoolTimeoutException;
+import org.apache.http.conn.ConnectionRequest;
+import org.apache.http.conn.HttpClientConnectionManager;
+import org.apache.http.conn.routing.HttpRoute;
+import org.apache.http.conn.socket.ConnectionSocketFactory;
+import org.apache.http.conn.socket.PlainConnectionSocketFactory;
+import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
+import org.apache.http.impl.conn.BasicHttpClientConnectionManager;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
+import java.security.NoSuchAlgorithmException;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
 
+import javax.net.ssl.HostnameVerifier;
+import javax.net.ssl.HttpsURLConnection;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLSocketFactory;
 
@@ -71,6 +89,9 @@ public class MainActivity extends AppCompatActivity {
     public final static int LOGGED_IN=3;
 
     public int login_state=NOT_CONNECTED;
+    public HttpClientConnectionManager connMgr=null;
+    public HttpClientConnection conn;
+
 
     public MainActivity()
     {
@@ -121,11 +142,18 @@ public class MainActivity extends AppCompatActivity {
                         Log.i(TAG,"token "+token);
                     }
                 });
-        TLS13 tls=new TLS13(this, homeViewModel, sharedPreferences.getString("server_string", "mm304.asuscomm.com"), Integer.parseInt(sharedPreferences.getString("server_port", "51443")) );
-        
-        loginViewModel.setTLS(tls);
+
+        connMgr = AndroidHttpClientConnectionManagerBuilder.create()
+                .setConnectionTimeToLive(1, TimeUnit.MINUTES)
+                .setDefaultSocketConfig(SocketConfig.custom()
+                        .setSoTimeout(5000)
+                        .build())
+                .build();
+
+//        TLS13 tls=new TLS13(this, homeViewModel, sharedPreferences.getString("server_string", "mm304.asuscomm.com"), Integer.parseInt(sharedPreferences.getString("server_port", "51443")) );
+//        loginViewModel.setTLS(tls);
 //        Log.i("TLS13","TLS "+main.tls.toString());
-        Log.i(TAG,tls.toString());
+//        Log.i(TAG,tls.toString());
         NavController navController = Navigation.findNavController(this, R.id.nav_host_fragment_content_main);
         NavigationUI.setupActionBarWithNavController(this, navController, mAppBarConfiguration);
         NavigationUI.setupWithNavController(navigationView, navController);
@@ -189,6 +217,10 @@ public class MainActivity extends AppCompatActivity {
             return true;
         }
         return super.onOptionsItemSelected(item);
+    }
+    @Override
+    public void onStart() {
+        super.onStart();
     }
 }
 

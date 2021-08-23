@@ -7,6 +7,7 @@ import androidx.annotation.Nullable;
 import androidx.annotation.StringRes;
 import androidx.fragment.app.Fragment;
 
+import android.content.Context;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
@@ -49,7 +50,6 @@ public class LoginFragment extends Fragment {
         super.onViewCreated(view, savedInstanceState);
         loginViewModel = new ViewModelProvider(this, new LoginViewModelFactory())
                 .get(LoginViewModel.class);
-
         final EditText usernameEditText = binding.username;
         final EditText passwordEditText = binding.password;
         final Button loginButton = binding.login;
@@ -86,6 +86,8 @@ public class LoginFragment extends Fragment {
                 }
             }
         });
+
+        main.loginViewModel=loginViewModel;
 
         TextWatcher afterTextChangedListener = new TextWatcher() {
             @Override
@@ -150,15 +152,26 @@ public class LoginFragment extends Fragment {
         super.onDestroyView();
         binding = null;
     }
+
+    @Override
+    public void onAttach(Context context) {
+        super.onAttach(context);
+        main=(MainActivity)context;
+        main.loginViewModel=loginViewModel;
+    }
+
+    @Override
+    public void onStart() {
+        super.onStart();
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+    }
     @Override
     public void onCreate(Bundle savedInstanceState) {
-
         super.onCreate(savedInstanceState);
-        main=(MainActivity)getActivity();
-        main.loginViewModel=loginViewModel;
-//        loginViewModel.setTLS(main.tls);
-//        Log.i("TLS13","TLS "+main.tls.toString());
-
     }
  /*   public void onActivityCreated (Bundle savedInstanceState) {
 

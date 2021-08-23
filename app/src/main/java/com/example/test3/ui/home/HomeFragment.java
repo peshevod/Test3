@@ -1,5 +1,6 @@
 package com.example.test3.ui.home;
 
+import android.content.Context;
 import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.os.Bundle;
@@ -26,6 +27,7 @@ import androidx.navigation.Navigation;
 import androidx.preference.PreferenceManager;
 
 import com.example.test3.MainActivity;
+import com.example.test3.MyConnection;
 import com.example.test3.R;
 import com.example.test3.TLS13;
 import com.example.test3.databinding.FragmentHomeBinding;
@@ -40,6 +42,8 @@ public class HomeFragment extends Fragment {
     private SharedPreferences sharedPreferences;
     MainActivity main;
     public boolean goToLogin=false;
+    String hostname;
+    int port;
 
 
     void setServerTitle()
@@ -68,8 +72,9 @@ public class HomeFragment extends Fragment {
         sharedPreferences =
                 PreferenceManager.getDefaultSharedPreferences(this.getActivity()/* Activity context */);
 
-        String s="https://"+ sharedPreferences.getString("server_url", "mm304.asuscomm.com")+":"+
-                sharedPreferences.getString("server_port", "51443");
+        hostname=sharedPreferences.getString("server_url", "mm304.asuscomm.com");
+        port=Integer.parseInt(sharedPreferences.getString("server_port", "51443"));
+        String s="https://"+ hostname+":"+port;
         String my_server=sharedPreferences.getString("server_name", "YOUR SERVER");
         homeViewModel.setStringText(s);
         homeViewModel.setNameText(my_server);
@@ -117,16 +122,16 @@ public class HomeFragment extends Fragment {
                     @Override
                     public void onClick(View v) {
 //                    homeViewModel.setProgressBar1(true);
-                    TLS13 tls=new TLS13((MainActivity)getActivity(), homeViewModel, sharedPreferences.getString("server_string", "mm304.asuscomm.com"), Integer.parseInt(sharedPreferences.getString("server_port", "51443")) );
                     progressBar1.setVisibility(View.VISIBLE);
                     if(!homeViewModel.getConnected().getValue()) {
                         goToLogin=true;
-                        tls.execute("CONNECT");
+                        MyConnection myConnection=new MyConnection(MyConnection.CMD_CONNECT,main,hostname,port);
+                        myConnection.execute();
                     }
                     else
                     {
-                        tls.execute("DISCONNECT");
-                        homeViewModel.setConnected(false);
+                        MyConnection myConnection=new MyConnection(MyConnection.CMD_DISCONNECT,main,hostname,port);
+                        myConnection.execute();
                     }
 
                     Log.i("TLS13","connected settings");
@@ -199,6 +204,37 @@ public class HomeFragment extends Fragment {
        main.tls.disconnect();
        homeViewModel.setConnected(false);
    }*/
+/*        SharedPreferences sharedPreferences =
+                PreferenceManager.getDefaultSharedPreferences(this.getActivity() /* Activity context */
+/*    );
+
+        String s="https://"+ sharedPreferences.getString("server_url", "mm304.asuscomm.com")+":"+
+                sharedPreferences.getString("server_port", "51443");
+        String my_server=sharedPreferences.getString("server_name", "YOUR SERVER");
+//        homeViewModel.setStringText(s);
+//        homeViewModel.setNameText(my_server);
+
+//        Spannable ss= (Spannable) android.text.TextUtils.concat(myServer,conn);
+//        getActivity().getActionBar().setTitle(android.text.TextUtils.concat(myServer,conn));
+        setServerTitle();
+        //        btn.setText(connected ? "Disconnect":"Connect");
+    }*/
+
+/*    @Override
+    public void onAttach(Context context) {
+        super.onAttach(context);
+        main=(MainActivity)context;
+        main.homeViewModel=homeViewModel;
+//        setServerTitle();
+    }*/
+
+
+    /*   @Override
+        public void onViewStateRestored(Bundle savedInstanceState) {
+           super.onViewStateRestored(savedInstanceState);
+           main.tls.disconnect();
+           homeViewModel.setConnected(false);
+       }*/
 /*        SharedPreferences sharedPreferences =
                 PreferenceManager.getDefaultSharedPreferences(this.getActivity() /* Activity context */
 /*    );
