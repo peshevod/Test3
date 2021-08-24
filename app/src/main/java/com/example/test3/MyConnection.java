@@ -1,18 +1,23 @@
 package com.example.test3;
 
 import android.os.AsyncTask;
+import android.telecom.ConnectionRequest;
 import android.util.Log;
 
-import org.apache.http.HttpHost;
-import org.apache.http.client.protocol.HttpClientContext;
-import org.apache.http.conn.ConnectionPoolTimeoutException;
-import org.apache.http.conn.ConnectionRequest;
-import org.apache.http.conn.routing.HttpRoute;
-import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
+
+import org.apache.hc.client5.http.HttpRoute;
+import org.apache.hc.client5.http.io.ConnectionEndpoint;
+import org.apache.hc.client5.http.io.LeaseRequest;
+import org.apache.hc.client5.http.protocol.HttpClientContext;
+import org.apache.hc.client5.http.ssl.SSLConnectionSocketFactory;
+import org.apache.hc.core5.http.HttpHost;
+import org.apache.hc.core5.util.TimeValue;
+import org.apache.hc.core5.util.Timeout;
 
 import java.io.IOException;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 public class MyConnection extends AsyncTask<Boolean, Void, Void> {
 
@@ -60,23 +65,15 @@ public class MyConnection extends AsyncTask<Boolean, Void, Void> {
 
     public boolean connect()
     {
-        HttpHost host=new HttpHost(hostname,port, "https");
+        HttpHost host=new HttpHost( "https",hostname,port);
         HttpRoute route=new HttpRoute(host);
-        ConnectionRequest connRequest=main.connMgr.requestConnection(route,null);
         try {
-            main.conn = connRequest.get(10, TimeUnit.SECONDS);
-            if (!main.conn.isOpen()) {
-                // establish connection based on its route info
-                try {
-                    main.connMgr.connect(main.conn, route, 1000, ctx);
-                    main.connMgr.routeComplete(main.conn, route, ctx);
-                } catch (IOException e) {
-                    Log.e(TAG,e.getMessage());
-                    main.connected=false;
-                    return false;
-                }
-             } else Log.i(TAG, "Connection is not open");
-        } catch (InterruptedException | ExecutionException | ConnectionPoolTimeoutException e) {
+            LeaseRequest leaseRequest=main.connMgr.lease("1",route, Timeout.ofMilliseconds(3000),null);
+            main.conn = leaseRequest.get(Timeout.ofSeconds(10));
+            if (!main.conn.isConnected()) {
+                main.connMgr.connect(main.conn, Timeout.ofMilliseconds(3000), ctx);
+             } else Log.i(TAG, "Connection is already opened");
+        } catch (InterruptedException | ExecutionException | TimeoutException | IOException e) {
             Log.e(TAG,e.getMessage());
             main.connected=false;
             return false;
@@ -87,7 +84,7 @@ public class MyConnection extends AsyncTask<Boolean, Void, Void> {
 
     public void disconnect()
     {
-        main.connMgr.releaseConnection(main.conn, null, 1, TimeUnit.MINUTES);
+        main.connMgr.release(main.conn, null, TimeValue.ofMinutes(1));
         main.connected=false;
     }
 

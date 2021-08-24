@@ -3,6 +3,9 @@ package com.example.test3;
 import android.os.AsyncTask;
 import android.util.Log;
 
+
+import org.apache.hc.client5.http.ssl.SSLConnectionSocketFactory;
+
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.FileInputStream;
@@ -11,6 +14,7 @@ import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.net.InetAddress;
+import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.net.URL;
 import java.net.UnknownHostException;
@@ -28,7 +32,7 @@ import javax.net.ssl.SSLPeerUnverifiedException;
 import javax.net.ssl.SSLSocket;
 import javax.net.ssl.SSLSocketFactory;
 
-public class MySSLSocketFactory extends SSLSocketFactory {
+public class MySSLSocketFactory extends SSLConnectionSocketFactory {
 
     private SSLSocketFactory factory;
     private SSLContext ctx;
@@ -36,26 +40,24 @@ public class MySSLSocketFactory extends SSLSocketFactory {
 
     public MySSLSocketFactory(SSLContext ctx)
     {
+        super(ctx);
         this.ctx=ctx;
-        factory=ctx.getSocketFactory();
+//        factory=ctx.getSocketFactory();
     }
 
-    @Override
     public String[] getDefaultCipherSuites() {
         return cipher;
     }
 
-    @Override
     public String[] getSupportedCipherSuites() {
         return cipher;
     }
 
-    @Override
-    public Socket createSocket(Socket s, String host, int port, boolean autoClose) throws IOException {
+/*    public Socket createSocket(Socket s, String host, int port, boolean autoClose) throws IOException {
         return factory.createSocket(s,host,port,autoClose);
     }
 
-    @Override
+
     public Socket createSocket(String host, int port) throws IOException, UnknownHostException {
         return factory.createSocket(host,port);
     }
@@ -74,5 +76,20 @@ public class MySSLSocketFactory extends SSLSocketFactory {
     public Socket createSocket(InetAddress address, int port, InetAddress localAddress, int localPort) throws IOException {
         return factory.createSocket(address,port,localAddress,localPort);
     }
+
+    @Override
+    public Socket createLayeredSocket(Socket socket, String target, int port, HttpContext context) throws IOException, UnknownHostException {
+        return null;
+    }
+
+    @Override
+    public Socket createSocket(HttpContext context) throws IOException {
+        return null;
+    }
+
+    @Override
+    public Socket connectSocket(int connectTimeout, Socket sock, HttpHost host, InetSocketAddress remoteAddress, InetSocketAddress localAddress, HttpContext context) throws IOException {
+        return null;
+    }*/
 }
 

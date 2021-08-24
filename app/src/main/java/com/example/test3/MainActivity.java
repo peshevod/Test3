@@ -39,25 +39,24 @@ import androidx.preference.PreferenceManager;
 
 import com.example.test3.databinding.ActivityMainBinding;
 import com.google.firebase.messaging.FirebaseMessaging;
-import com.ok2c.hc.android.http.AndroidHttpClientConnectionManagerBuilder;
 
-import org.apache.http.HttpClientConnection;
-import org.apache.http.HttpHost;
-import org.apache.http.client.protocol.HttpClientContext;
-import org.apache.http.config.Registry;
-import org.apache.http.config.RegistryBuilder;
-import org.apache.http.config.SocketConfig;
-import org.apache.http.conn.ConnectionPoolTimeoutException;
-import org.apache.http.conn.ConnectionRequest;
-import org.apache.http.conn.HttpClientConnectionManager;
-import org.apache.http.conn.routing.HttpRoute;
-import org.apache.http.conn.socket.ConnectionSocketFactory;
-import org.apache.http.conn.socket.PlainConnectionSocketFactory;
-import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
-import org.apache.http.impl.conn.BasicHttpClientConnectionManager;
-import org.jetbrains.annotations.NotNull;
+
+import org.apache.hc.client5.http.impl.io.BasicHttpClientConnectionManager;
+import org.apache.hc.client5.http.impl.io.PoolingHttpClientConnectionManagerBuilder;
+import org.apache.hc.client5.http.io.ConnectionEndpoint;
+import org.apache.hc.client5.http.io.HttpClientConnectionManager;
+import org.apache.hc.client5.http.socket.ConnectionSocketFactory;
+import org.apache.hc.client5.http.socket.PlainConnectionSocketFactory;
+import org.apache.hc.client5.http.ssl.DefaultHostnameVerifier;
+import org.apache.hc.client5.http.ssl.SSLConnectionSocketFactory;
+import org.apache.hc.core5.http.config.Registry;
+import org.apache.hc.core5.http.config.RegistryBuilder;
+import org.apache.hc.core5.http.io.HttpClientConnection;
+import org.apache.hc.core5.http.io.SocketConfig;
+import org.apache.hc.core5.util.TimeValue;
 
 import java.io.IOException;
+import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
@@ -78,7 +77,7 @@ public class MainActivity extends AppCompatActivity {
     private ProgressBar spinner;
     public SSLContext ctx=null;
     public MainActivity main;
-    public SSLSocketFactory factory=null;
+    public MySSLSocketFactory factory=null;
     public TLS13 tls;
     final String TAG="TLS13";
     public HomeViewModel homeViewModel;
@@ -89,14 +88,49 @@ public class MainActivity extends AppCompatActivity {
     public final static int LOGGED_IN=3;
 
     public int login_state=NOT_CONNECTED;
-    public HttpClientConnectionManager connMgr=null;
-    public HttpClientConnection conn;
+    public BasicHttpClientConnectionManager connMgr=null;
+    public ConnectionEndpoint conn;
 
 
     public MainActivity()
     {
         super();
         main=this;
+    }
+
+    void createConnectionManager()
+    {
+        try {
+            ctx = SSLContext.getInstance("TLSv1.3");
+            ctx.init(null, null, null);
+        } catch (KeyManagementException | NoSuchAlgorithmException e) {
+            Log.e(TAG, e.getMessage());
+        }
+        Log.i(TAG, " MySSLSocketFactory successfully created");
+//        DefaultHostnameVerifier hostnameVerifier = new DefaultHostnameVerifier(null);
+        SSLConnectionSocketFactory f = new SSLConnectionSocketFactory(
+                ctx,
+                new String[]{"TLSv1.3"},
+                new String[]{"TLS_AES_128_GCM_SHA256"},
+                new DefaultHostnameVerifier(null));
+        Registry<ConnectionSocketFactory> registry = RegistryBuilder.<ConnectionSocketFactory>create()
+                .register("http", PlainConnectionSocketFactory.getSocketFactory())
+                .register("https", f)
+                .build();
+        connMgr=new BasicHttpClientConnectionManager(registry);
+        connMgr.setSocketConfig(SocketConfig.custom()
+                .setSoTimeout(5000,TimeUnit.MILLISECONDS)
+                .build());
+
+/*        connMgr = PoolingHttpClientConnectionManagerBuilder.create()
+                .setConnectionTimeToLive(TimeValue.ofMinutes(1))
+                .setSSLSocketFactory(f)
+                .setDefaultSocketConfig(SocketConfig.custom()
+                        .setSoTimeout(5000,TimeUnit.MILLISECONDS)
+                        .build())
+                .build();*/
+
+
     }
 
     @Override
@@ -143,13 +177,7 @@ public class MainActivity extends AppCompatActivity {
                     }
                 });
 
-        connMgr = AndroidHttpClientConnectionManagerBuilder.create()
-                .setConnectionTimeToLive(1, TimeUnit.MINUTES)
-                .setDefaultSocketConfig(SocketConfig.custom()
-                        .setSoTimeout(5000)
-                        .build())
-                .build();
-
+      createConnectionManager();
 //        TLS13 tls=new TLS13(this, homeViewModel, sharedPreferences.getString("server_string", "mm304.asuscomm.com"), Integer.parseInt(sharedPreferences.getString("server_port", "51443")) );
 //        loginViewModel.setTLS(tls);
 //        Log.i("TLS13","TLS "+main.tls.toString());
