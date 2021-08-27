@@ -47,10 +47,10 @@ public class LoginRepository {
         // @see https://developer.android.com/training/articles/keystore
     }
 
-    public boolean login(TLS13 tls, String username, String password) {
+    public boolean login(String username, String password) {
         // handle login
         Log.i("TLS13","LoginRepository login");
-        boolean result = dataSource.login(tls,username, password);
+        boolean result = dataSource.login(username, password);
 /*        if (result instanceof Result.Success) {
             setLoggedInUser(((Result.Success<LoggedInUser>) result).getData());
         }*/

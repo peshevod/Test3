@@ -13,16 +13,11 @@ import java.io.IOException;
  */
 public class LoginDataSource {
 
-    public boolean login(TLS13 tls, String username, String password) {
+    public boolean login(String username, String password) {
 
     Log.i("TLS13","Datasource login");
         try {
-            // TODO: handle loggedInUser authentication
-            String credentials[]=new String[3];
-            credentials[0]="LOGIN";
-            credentials[1]=username;
-            credentials[2]=password;
-            tls.execute(credentials);
+            // TODO Login procedure
 /*            LoggedInUser fakeUser =
                     new LoggedInUser(
                             java.util.UUID.randomUUID().toString(),

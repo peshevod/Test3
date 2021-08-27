@@ -1,19 +1,12 @@
 package com.example.test3;
 
-import android.content.DialogInterface;
 import android.content.SharedPreferences;
-import android.graphics.Color;
 import android.os.Bundle;
-import android.text.Spannable;
-import android.text.SpannableString;
-import android.text.style.ForegroundColorSpan;
 import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.Menu;
-import android.widget.Button;
 import android.widget.ProgressBar;
-import android.widget.Toast;
 
 import com.example.test3.databinding.NavHeaderMainBinding;
 import com.example.test3.ui.home.HomeViewModel;
@@ -24,10 +17,6 @@ import com.google.android.material.snackbar.Snackbar;
 import com.google.android.material.navigation.NavigationView;
 
 import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import androidx.appcompat.app.ActionBar;
-import androidx.fragment.app.FragmentManager;
-import androidx.lifecycle.MutableLiveData;
 import androidx.navigation.NavController;
 import androidx.navigation.NavDestination;
 import androidx.navigation.Navigation;
@@ -42,29 +31,23 @@ import com.google.firebase.messaging.FirebaseMessaging;
 
 
 import org.apache.hc.client5.http.impl.io.BasicHttpClientConnectionManager;
-import org.apache.hc.client5.http.impl.io.PoolingHttpClientConnectionManagerBuilder;
 import org.apache.hc.client5.http.io.ConnectionEndpoint;
-import org.apache.hc.client5.http.io.HttpClientConnectionManager;
 import org.apache.hc.client5.http.socket.ConnectionSocketFactory;
 import org.apache.hc.client5.http.socket.PlainConnectionSocketFactory;
 import org.apache.hc.client5.http.ssl.DefaultHostnameVerifier;
 import org.apache.hc.client5.http.ssl.SSLConnectionSocketFactory;
 import org.apache.hc.core5.http.config.Registry;
 import org.apache.hc.core5.http.config.RegistryBuilder;
-import org.apache.hc.core5.http.io.HttpClientConnection;
 import org.apache.hc.core5.http.io.SocketConfig;
-import org.apache.hc.core5.util.TimeValue;
+import org.apache.hc.core5.http.protocol.BasicHttpContext;
 
-import java.io.IOException;
 import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
-import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
-import javax.net.ssl.HostnameVerifier;
-import javax.net.ssl.HttpsURLConnection;
 import javax.net.ssl.SSLContext;
-import javax.net.ssl.SSLSocketFactory;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -90,7 +73,8 @@ public class MainActivity extends AppCompatActivity {
     public int login_state=NOT_CONNECTED;
     public BasicHttpClientConnectionManager connMgr=null;
     public ConnectionEndpoint conn;
-
+    BasicHttpContext basicHttpContext;
+    ExecutorService pool;
 
     public MainActivity()
     {
@@ -121,7 +105,8 @@ public class MainActivity extends AppCompatActivity {
         connMgr.setSocketConfig(SocketConfig.custom()
                 .setSoTimeout(5000,TimeUnit.MILLISECONDS)
                 .build());
-
+//        BasicHttpContext basicHttpContext=new BasicHttpContext();
+        pool= Executors.newCachedThreadPool();
 /*        connMgr = PoolingHttpClientConnectionManagerBuilder.create()
                 .setConnectionTimeToLive(TimeValue.ofMinutes(1))
                 .setSSLSocketFactory(f)
@@ -129,8 +114,16 @@ public class MainActivity extends AppCompatActivity {
                         .setSoTimeout(5000,TimeUnit.MILLISECONDS)
                         .build())
                 .build();*/
+    }
 
+    public void connect(String hostname,int port)
+    {
+        pool.execute(new MyConnection( this, hostname, port));
+    }
 
+    public void disconnect()
+    {
+        pool.execute(new MyConnection(this));
     }
 
     @Override

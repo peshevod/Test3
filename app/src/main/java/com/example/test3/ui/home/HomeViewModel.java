@@ -43,8 +43,9 @@ public class HomeViewModel extends ViewModel {
     }
     public LiveData<String> getButtonText() { return buttonText; };
     public void setButtonText(String s) { buttonText.setValue(s); }
-    public LiveData<Boolean> getConnected() { return connected; }
+    public MutableLiveData<Boolean> getConnected() { return connected; }
     public void setConnected(Boolean b) { connected.setValue(b); }
+    public void postConnected(Boolean b) { connected.postValue(b); }
  //   public void setProgressBar1(boolean sw) {
  //       if(sw) progressBar1.getValue().setVisibility(View.VISIBLE);
  //       else progressBar1.getValue().setVisibility(View.GONE);

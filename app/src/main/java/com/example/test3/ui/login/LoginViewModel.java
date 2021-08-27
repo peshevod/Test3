@@ -18,7 +18,6 @@ public class LoginViewModel extends ViewModel {
     private MutableLiveData<LoginFormState> loginFormState = new MutableLiveData<>();
     private MutableLiveData<LoginResult> loginResult = new MutableLiveData<>();
     private LoginRepository loginRepository;
-    private TLS13 tls;
 
     LoginViewModel(LoginRepository loginRepository) {
         this.loginRepository = loginRepository;
@@ -35,7 +34,7 @@ public class LoginViewModel extends ViewModel {
     public void login(String username, String password) {
         // can be launched in a separate asynchronous job
 
-        boolean result = loginRepository.login(tls,username, password);
+        boolean result = loginRepository.login(username, password);
     }
 
 
@@ -74,10 +73,5 @@ public class LoginViewModel extends ViewModel {
     // A placeholder password validation check
     private boolean isPasswordValid(String password) {
         return password != null && password.trim().length() > 5;
-    }
-
-    public void setTLS(TLS13 tls)
-    {
-        this.tls=tls;
     }
 }
