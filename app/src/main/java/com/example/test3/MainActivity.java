@@ -31,15 +31,23 @@ import com.google.firebase.messaging.FirebaseMessaging;
 
 
 import org.apache.hc.client5.http.impl.io.BasicHttpClientConnectionManager;
+import org.apache.hc.client5.http.impl.io.PoolingHttpClientConnectionManager;
 import org.apache.hc.client5.http.io.ConnectionEndpoint;
+import org.apache.hc.client5.http.protocol.HttpClientContext;
 import org.apache.hc.client5.http.socket.ConnectionSocketFactory;
 import org.apache.hc.client5.http.socket.PlainConnectionSocketFactory;
 import org.apache.hc.client5.http.ssl.DefaultHostnameVerifier;
 import org.apache.hc.client5.http.ssl.SSLConnectionSocketFactory;
+import org.apache.hc.core5.http.ConnectionReuseStrategy;
+import org.apache.hc.core5.http.HttpHost;
+import org.apache.hc.core5.http.HttpRequest;
+import org.apache.hc.core5.http.HttpResponse;
 import org.apache.hc.core5.http.config.Registry;
 import org.apache.hc.core5.http.config.RegistryBuilder;
+import org.apache.hc.core5.http.impl.io.HttpRequestExecutor;
 import org.apache.hc.core5.http.io.SocketConfig;
 import org.apache.hc.core5.http.protocol.BasicHttpContext;
+import org.apache.hc.core5.http.protocol.HttpContext;
 
 import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
@@ -66,15 +74,18 @@ public class MainActivity extends AppCompatActivity {
     public HomeViewModel homeViewModel;
     public LoginViewModel loginViewModel;
     public final static int NOT_CONNECTED=0;
-    public final static int NOT_LOGGED_IN=1;
+    public final static int CONNECT_REQUIRED=1;
     public final static int BASIC_LOGIN_REQUIRED=2;
     public final static int LOGGED_IN=3;
 
     public int login_state=NOT_CONNECTED;
-    public BasicHttpClientConnectionManager connMgr=null;
+    public PoolingHttpClientConnectionManager connMgr=null;
     public ConnectionEndpoint conn;
-    BasicHttpContext basicHttpContext;
+    public BasicHttpContext basicHttpContext;
     ExecutorService pool;
+    public HttpHost host;
+    public HttpClientContext context;
+    public HttpRequestExecutor httpRequestExecutor;
 
     public MainActivity()
     {
@@ -101,12 +112,22 @@ public class MainActivity extends AppCompatActivity {
                 .register("http", PlainConnectionSocketFactory.getSocketFactory())
                 .register("https", f)
                 .build();
-        connMgr=new BasicHttpClientConnectionManager(registry);
-        connMgr.setSocketConfig(SocketConfig.custom()
+        connMgr=new PoolingHttpClientConnectionManager(registry);
+
+/*        connMgr.setSocketConfig(SocketConfig.custom()
                 .setSoTimeout(5000,TimeUnit.MILLISECONDS)
-                .build());
+                .build());*/
 //        BasicHttpContext basicHttpContext=new BasicHttpContext();
+//        context=new HttpClientContext();
+        basicHttpContext=new BasicHttpContext();
         pool= Executors.newCachedThreadPool();
+        httpRequestExecutor=new HttpRequestExecutor(new ConnectionReuseStrategy() {
+            @Override
+            public boolean keepAlive(HttpRequest request, HttpResponse response, HttpContext context) {
+                return true;
+            }
+        });
+        main.login_state=MainActivity.CONNECT_REQUIRED;
 /*        connMgr = PoolingHttpClientConnectionManagerBuilder.create()
                 .setConnectionTimeToLive(TimeValue.ofMinutes(1))
                 .setSSLSocketFactory(f)
@@ -124,6 +145,11 @@ public class MainActivity extends AppCompatActivity {
     public void disconnect()
     {
         pool.execute(new MyConnection(this));
+    }
+
+    public void login(String username, String password)
+    {
+        pool.execute(new MyConnection(this, username, password));
     }
 
     @Override

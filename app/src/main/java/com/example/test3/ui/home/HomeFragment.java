@@ -175,13 +175,14 @@ public class HomeFragment extends Fragment {
         homeViewModel.getConnected().observe(getViewLifecycleOwner(), new Observer<Boolean>() {
             @Override
             public void onChanged(@Nullable Boolean b) {
-                Log.i("TLS13","Connected changes "+b);
+                if(!b) main.login_state=MainActivity.CONNECT_REQUIRED;
+                Log.i("TLS13","Connected changes "+b+" login_state="+main.login_state);
                 btn.setText(b.booleanValue() ? "Disconnect" : "Connect");
                 setServerTitle();
                 progressBar1.setVisibility(View.GONE);
-                if(b && goToLogin && main.login_state==MainActivity.BASIC_LOGIN_REQUIRED)
+                if(b && (main.login_state==MainActivity.BASIC_LOGIN_REQUIRED))
                 {
-                    goToLogin=false;
+                    Log.i("TLS13","Navigate to login");
                     Navigation.findNavController(main, R.id.nav_host_fragment_content_main).navigate(R.id.loginFragment);
                 }
 

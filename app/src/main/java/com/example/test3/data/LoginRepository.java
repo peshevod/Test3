@@ -2,6 +2,7 @@ package com.example.test3.data;
 
 import android.util.Log;
 
+import com.example.test3.MainActivity;
 import com.example.test3.TLS13;
 import com.example.test3.data.model.LoggedInUser;
 
@@ -41,16 +42,16 @@ public class LoginRepository {
         dataSource.logout();
     }
 
-    private void setLoggedInUser(LoggedInUser user) {
+    public void setLoggedInUser(LoggedInUser user) {
         this.user = user;
         // If user credentials will be cached in local storage, it is recommended it be encrypted
         // @see https://developer.android.com/training/articles/keystore
     }
 
-    public boolean login(String username, String password) {
+    public boolean login(MainActivity main, String username, String password) {
         // handle login
         Log.i("TLS13","LoginRepository login");
-        boolean result = dataSource.login(username, password);
+        boolean result = dataSource.login(main, username, password);
 /*        if (result instanceof Result.Success) {
             setLoggedInUser(((Result.Success<LoggedInUser>) result).getData());
         }*/

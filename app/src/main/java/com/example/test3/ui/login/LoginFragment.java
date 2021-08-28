@@ -50,6 +50,7 @@ public class LoginFragment extends Fragment {
         super.onViewCreated(view, savedInstanceState);
         loginViewModel = new ViewModelProvider(this, new LoginViewModelFactory())
                 .get(LoginViewModel.class);
+        main.loginViewModel=loginViewModel;
         final EditText usernameEditText = binding.username;
         final EditText passwordEditText = binding.password;
         final Button loginButton = binding.login;
@@ -111,7 +112,7 @@ public class LoginFragment extends Fragment {
             @Override
             public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
                 if (actionId == EditorInfo.IME_ACTION_DONE) {
-                    loginViewModel.login(usernameEditText.getText().toString(),
+                    loginViewModel.login(main, usernameEditText.getText().toString(),
                             passwordEditText.getText().toString());
                 }
                 return false;
@@ -122,7 +123,7 @@ public class LoginFragment extends Fragment {
             @Override
             public void onClick(View v) {
                 loadingProgressBar.setVisibility(View.VISIBLE);
-                loginViewModel.login(usernameEditText.getText().toString(),
+                loginViewModel.login(main, usernameEditText.getText().toString(),
                         passwordEditText.getText().toString());
             }
         });
@@ -155,7 +156,6 @@ public class LoginFragment extends Fragment {
     public void onAttach(Context context) {
         super.onAttach(context);
         main=(MainActivity)context;
-        main.loginViewModel=loginViewModel;
     }
 
     @Override
