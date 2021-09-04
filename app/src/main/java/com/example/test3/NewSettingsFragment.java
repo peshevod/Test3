@@ -52,11 +52,13 @@ public class NewSettingsFragment extends PreferenceFragmentCompat {
             listPreference.setTitle("Select Server");
             String selectedServer=sharedPreferences.getString("selected_server","");
             Log.i("TLS13","selected_server="+selectedServer);
+            listPreference.setValue(selectedServer);
             listPreference.setSummary(selectedServer);
             listPreference.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
                 @Override
                 public boolean onPreferenceChange(Preference preference, Object newValue) {
                     listPreference.setSummary(newValue.toString());
+                    listPreference.setValue(newValue.toString());
                     SharedPreferences.Editor ed=sharedPreferences.edit();
                     ed.putString("selected_server",newValue.toString());
                     ed.commit();
@@ -74,22 +76,10 @@ public class NewSettingsFragment extends PreferenceFragmentCompat {
 
     @Override
     public void onCreatePreferences(Bundle savedInstanceState, String rootKey) {
-//            setPreferencesFromResource(R.xml.root_preferences1, rootKey);
         preferenceScreen=getPreferenceManager().createPreferenceScreen(getActivity());
         setPreferenceScreen(preferenceScreen);
         sharedPreferences=getPreferenceManager().getSharedPreferences();
-        createServersMenu();
-/*        sharedPreferences.registerOnSharedPreferenceChangeListener(new SharedPreferences.OnSharedPreferenceChangeListener() {
-            @Override
-            public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String s) {
-                if(s.equals("selected_server"))
-                {
-
-                }
-            }
-        });*/
-//            getPreferenceManager().getPreferenceScreen().removePreference(getPreferenceScreen().findPreference("select_server"));
-
+//        createServersMenu();
     }
 
     @Override
@@ -98,10 +88,4 @@ public class NewSettingsFragment extends PreferenceFragmentCompat {
         Log.i("TLS13","Resume available_servers="+sharedPreferences.getStringSet("available_servers",new HashSet<String>()).toString());
         createServersMenu();
     }
-
-/*    @Override
-    public boolean onPreferenceTreeClick (Preference preference)
-    {
-        return true;
-    }*/
 }

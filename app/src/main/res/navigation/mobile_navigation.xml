@@ -10,11 +10,11 @@
         android:name="com.example.test3.ui.home.HomeFragment"
         tools:layout="@layout/fragment_home" >
         <action
-            android:id="@+id/action_nav_home_to_loginFragment"
-            app:destination="@id/loginFragment" />
-        <action
             android:id="@+id/action_nav_home_to_newSettingsFragment"
             app:destination="@id/new_settings_fragment" />
+        <action
+            android:id="@+id/action_nav_home_to_login_fragment"
+            app:destination="@id/login_fragment" />
     </fragment>
 
     <fragment

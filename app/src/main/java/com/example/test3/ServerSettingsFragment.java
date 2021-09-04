@@ -37,7 +37,7 @@ public class ServerSettingsFragment extends PreferenceFragmentCompat {
                 preference.setSummary(newServer);
                 Log.i("TLS13", "New server of " + preference.getKey() + "=" + (CharSequence) newValue);
                 String serverURL=sharedPreferences.getString(oldServer!=null ? oldServer + "@server_url" : "server_url","");
-                String serverPort=sharedPreferences.getString(oldServer!=null ? oldServer + "@server_url" : "server_url","0");
+                String serverPort=sharedPreferences.getString(oldServer!=null ? oldServer + "@server_port" : "server_port","0");
                 SharedPreferences.Editor editor = sharedPreferences.edit();
                 if(oldServer!=null)
                 {
@@ -61,17 +61,16 @@ public class ServerSettingsFragment extends PreferenceFragmentCompat {
             @Override
             public boolean onPreferenceChange(Preference preference, Object newValue) {
                 Log.i("TLS13", "New urlr of " + preference.getKey() + "=" + newValue.toString());
-                preference.setSummary((String) newValue);
+                preference.setSummary(newValue.toString());
                 SharedPreferences.Editor editor = sharedPreferences.edit();
                 editor.putString(oldServer!=null ? oldServer + "@server_url" : "server_url", (String) newValue);
                 editor.commit();
                 return true;
             }
         });
-        if(oldServer!=null) server.findPreference(oldServer!=null ? oldServer+"@server_port" : "server_port").setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
+        server.findPreference(oldServer!=null ? oldServer+"@server_port" : "server_port").setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
             @Override
             public boolean onPreferenceChange(Preference preference, Object newValue) {
-                String parent = server.getKey();
                 Log.i("TLS13", "New port of " + preference.getKey() + "=" + newValue.toString());
                 preference.setSummary(newValue.toString());
                 SharedPreferences.Editor editor = sharedPreferences.edit();

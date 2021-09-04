@@ -43,12 +43,12 @@ public class HomeFragment extends Fragment {
     MainActivity main;
     public boolean goToLogin=false;
     String hostname;
+    String my_server;
     int port;
 
 
     void setServerTitle()
     {
-        String my_server=sharedPreferences.getString("SelectedServer", "Server not selected");
         String conn= homeViewModel.getConnected().getValue() ? " - connected" : " - not connected";
         Spannable ss = new SpannableString(my_server+conn);
         ss.setSpan(new ForegroundColorSpan(Color.WHITE), 0, my_server.length(), Spannable.SPAN_INCLUSIVE_INCLUSIVE);
@@ -72,10 +72,12 @@ public class HomeFragment extends Fragment {
         sharedPreferences =
                 PreferenceManager.getDefaultSharedPreferences(this.getActivity()/* Activity context */);
 
-        hostname=sharedPreferences.getString("server_url", "mm304.asuscomm.com");
-        port=Integer.parseInt(sharedPreferences.getString("server_port", "51443"));
+        my_server=sharedPreferences.getString("selected_server", "Server not selected");
+        Log.i("TLS13","My Server="+my_server);
+        hostname=sharedPreferences.getString(my_server+"@server_url", "mm304.asuscomm.com");
+        port=Integer.parseInt(sharedPreferences.getString(my_server+"@server_port", "51443"));
+//        port=51443;
         String s="https://"+ hostname+":"+port;
-        String my_server=sharedPreferences.getString("SelectedServer", "Server not selected");
         homeViewModel.setStringText(s);
         homeViewModel.setNameText(my_server);
 //        homeViewModel.setConnected(false);
@@ -183,7 +185,7 @@ public class HomeFragment extends Fragment {
                 if(b && (main.login_state==MainActivity.BASIC_LOGIN_REQUIRED))
                 {
                     Log.i("TLS13","Navigate to login");
-                    Navigation.findNavController(main, R.id.nav_host_fragment_content_main).navigate(R.id.loginFragment);
+                    Navigation.findNavController(main, R.id.nav_host_fragment_content_main).navigate(R.id.action_nav_home_to_login_fragment);
                 }
 
 //                btn.refreshDrawableState();

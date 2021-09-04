@@ -221,9 +221,9 @@ public class MainActivity extends AppCompatActivity implements PreferenceFragmen
                     }
         });
 
-        SharedPreferences.Editor ed=sharedPreferences.edit();
+/*        SharedPreferences.Editor ed=sharedPreferences.edit();
         ed.clear();
-        ed.commit();
+        ed.commit();*/
         String selectedServer=sharedPreferences.getString("selected_server","");
         Set<String> availableServers=sharedPreferences.getStringSet("available_servers",new HashSet<String>());
         Log.i("TLS13","Begin: AvailServers="+availableServers.toString()+" SelectedServer="+selectedServer);
