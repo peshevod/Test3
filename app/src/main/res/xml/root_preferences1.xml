@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <Preference
+        android:key="server_settings_fragment"
+        android:title="Add Server"
+        android:fragment="com.example.test3.ServerSettingsFragment" />
+
+    <ListPreference
+        android:key="select_server"
+        android:title="Select Server"
+        android:dialogTitle="Add or Select Server"
+        android:entries="@array/server_entries"
+        android:entryValues="@array/server_values" />
+
+</PreferenceScreen>

@@ -1,0 +1,23 @@
+<PreferenceScreen xmlns:app="http://schemas.android.com/apk/res-auto">
+
+
+        <PreferenceCategory app:key="new_server" app:title="NewServer">
+            <EditTextPreference
+                app:key="server_name"
+                app:title="server_name"
+                app:defaultValue="server_name"
+                app:useSimpleSummaryProvider="true" />
+            <EditTextPreference
+                app:key="server_url"
+                app:title="server_url"
+                app:defaultValue="server_url.com"
+                app:useSimpleSummaryProvider="true" />
+            <EditTextPreference
+                app:key="server_port"
+                app:title="@string/server_port"
+                app:defaultValue="0"
+                app:useSimpleSummaryProvider="true" />
+        </PreferenceCategory>
+
+
+</PreferenceScreen>

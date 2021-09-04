@@ -10,11 +10,11 @@
         android:name="com.example.test3.ui.home.HomeFragment"
         tools:layout="@layout/fragment_home" >
         <action
-            android:id="@+id/action_nav_home_to_settingsFragment"
-            app:destination="@id/settingsFragment" />
-        <action
             android:id="@+id/action_nav_home_to_loginFragment"
             app:destination="@id/loginFragment" />
+        <action
+            android:id="@+id/action_nav_home_to_newSettingsFragment"
+            app:destination="@id/new_settings_fragment" />
     </fragment>
 
     <fragment
@@ -23,8 +23,8 @@
         android:label="@string/menu_gallery"
         tools:layout="@layout/fragment_gallery" >
         <action
-            android:id="@+id/action_nav_gallery_to_settingsFragment"
-            app:destination="@id/settingsFragment" />
+            android:id="@+id/action_nav_gallery_to_newSettingsFragment"
+            app:destination="@id/new_settings_fragment" />
     </fragment>
 
     <fragment
@@ -33,24 +33,45 @@
         android:label="@string/menu_slideshow"
         tools:layout="@layout/fragment_slideshow" >
         <action
-            android:id="@+id/action_nav_slideshow_to_settingsFragment"
-            app:destination="@id/settingsFragment" />
+            android:id="@+id/action_nav_slideshow_to_newSettingsFragment"
+            app:destination="@id/new_settings_fragment" />
     </fragment>
     <fragment
-        android:id="@+id/settingsFragment"
-        android:name="com.example.test3.SettingsFragment"
-        android:label="SettingsFragment" >
-        <action
-            android:id="@+id/action_settingsFragment_pop"
-            app:popUpTo="@id/settingsFragment"
-            app:popUpToInclusive="true" />
-        <action
-            android:id="@+id/action_settingsFragment_self"
-            app:destination="@id/settingsFragment" />
-    </fragment>
-    <fragment
-        android:id="@+id/loginFragment"
+        android:id="@+id/login_fragment"
         android:name="com.example.test3.ui.login.LoginFragment"
         android:label="fragment_login"
         tools:layout="@layout/fragment_login" />
+    <fragment
+        android:id="@+id/new_settings_fragment"
+        android:name="com.example.test3.NewSettingsFragment"
+        android:label="NewSettingsFragment" >
+        <action
+            android:id="@+id/action_newSettingsFragment_to_nav_home"
+            app:destination="@id/nav_home" />
+        <action
+            android:id="@+id/action_newSettingsFragment_to_serverSelectFragment"
+            app:destination="@id/server_select_fragment" />
+        <action
+            android:id="@+id/action_newSettingsFragment_to_serverSettingsFragment"
+            app:destination="@id/server_settings_fragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/server_select_fragment"
+        android:name="com.example.test3.ServerSelectFragment"
+        android:label="ServerSelectFragment" >
+        <action
+            android:id="@+id/action_serverSelectFragment_to_newSettingsFragment"
+            app:destination="@id/new_settings_fragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/server_settings_fragment"
+        android:name="com.example.test3.ServerSettingsFragment"
+        android:label="ServerSettingsFragment" >
+        <action
+            android:id="@+id/action_serverSettingsFragment_to_newSettingsFragment"
+            app:destination="@id/new_settings_fragment" />
+        <argument
+            android:name="server_name"
+            app:argType="string" />
+    </fragment>
 </navigation>

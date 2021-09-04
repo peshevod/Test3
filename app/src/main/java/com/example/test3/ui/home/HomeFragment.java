@@ -48,7 +48,7 @@ public class HomeFragment extends Fragment {
 
     void setServerTitle()
     {
-        String my_server=sharedPreferences.getString("server_name", "YOUR SERVER");
+        String my_server=sharedPreferences.getString("SelectedServer", "Server not selected");
         String conn= homeViewModel.getConnected().getValue() ? " - connected" : " - not connected";
         Spannable ss = new SpannableString(my_server+conn);
         ss.setSpan(new ForegroundColorSpan(Color.WHITE), 0, my_server.length(), Spannable.SPAN_INCLUSIVE_INCLUSIVE);
@@ -75,7 +75,7 @@ public class HomeFragment extends Fragment {
         hostname=sharedPreferences.getString("server_url", "mm304.asuscomm.com");
         port=Integer.parseInt(sharedPreferences.getString("server_port", "51443"));
         String s="https://"+ hostname+":"+port;
-        String my_server=sharedPreferences.getString("server_name", "YOUR SERVER");
+        String my_server=sharedPreferences.getString("SelectedServer", "Server not selected");
         homeViewModel.setStringText(s);
         homeViewModel.setNameText(my_server);
 //        homeViewModel.setConnected(false);

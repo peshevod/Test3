@@ -17,6 +17,7 @@ import com.google.android.material.snackbar.Snackbar;
 import com.google.android.material.navigation.NavigationView;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.navigation.NavController;
 import androidx.navigation.NavDestination;
 import androidx.navigation.Navigation;
@@ -24,6 +25,8 @@ import androidx.navigation.ui.AppBarConfiguration;
 import androidx.navigation.ui.NavigationUI;
 import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.preference.Preference;
+import androidx.preference.PreferenceFragmentCompat;
 import androidx.preference.PreferenceManager;
 
 import com.example.test3.databinding.ActivityMainBinding;
@@ -51,13 +54,15 @@ import org.apache.hc.core5.http.protocol.HttpContext;
 
 import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
 import javax.net.ssl.SSLContext;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements PreferenceFragmentCompat.OnPreferenceStartFragmentCallback{
 
     private AppBarConfiguration mAppBarConfiguration;
     private ActivityMainBinding binding;
@@ -215,7 +220,25 @@ public class MainActivity extends AppCompatActivity {
                         }
                     }
         });
-/*        btn.setOnClickListener(
+
+        SharedPreferences.Editor ed=sharedPreferences.edit();
+        ed.clear();
+        ed.commit();
+        String selectedServer=sharedPreferences.getString("selected_server","");
+        Set<String> availableServers=sharedPreferences.getStringSet("available_servers",new HashSet<String>());
+        Log.i("TLS13","Begin: AvailServers="+availableServers.toString()+" SelectedServer="+selectedServer);
+        if(availableServers.isEmpty() || !availableServers.contains(selectedServer))
+        {
+            SharedPreferences.Editor editor=sharedPreferences.edit();
+            editor.putString("selected_server","");
+            selectedServer="";
+            editor.commit();
+        }
+
+//        if(selectedServer.isEmpty()) navController.navigate(R.id.action_nav_home_to_newSettingsFragment);
+
+
+        /*        btn.setOnClickListener(
                 new View.OnClickListener(){
                     @Override
                     public void onClick(View v) {
@@ -252,13 +275,13 @@ public class MainActivity extends AppCompatActivity {
             NavController nc=Navigation.findNavController(this, R.id.nav_host_fragment_content_main);
             switch(nc.getCurrentDestination().getId()) {
                 case R.id.nav_home:
-                    nc.navigate(R.id.action_nav_home_to_settingsFragment);
+                    nc.navigate(R.id.action_nav_home_to_newSettingsFragment);
                     break;
                 case R.id.nav_gallery:
-                    nc.navigate(R.id.action_nav_gallery_to_settingsFragment);
+                    nc.navigate(R.id.action_nav_gallery_to_newSettingsFragment);
                     break;
                 case R.id.nav_slideshow:
-                    nc.navigate(R.id.action_nav_slideshow_to_settingsFragment);
+                    nc.navigate(R.id.action_nav_slideshow_to_newSettingsFragment);
                     break;
             }
             return true;
@@ -268,6 +291,36 @@ public class MainActivity extends AppCompatActivity {
     @Override
     public void onStart() {
         super.onStart();
+    }
+
+    @Override
+    public boolean onPreferenceStartFragment(PreferenceFragmentCompat caller, Preference pref) {
+        NavController navController = Navigation.findNavController(MainActivity.this, R.id.nav_host_fragment_content_main);
+
+        Log.i("TLS13","pref.getKey="+pref.getKey());
+        if(pref.getKey().equals("server_select_fragment"))
+        {
+            navController.navigate(R.id.action_newSettingsFragment_to_serverSelectFragment);
+        }
+        else
+        {
+            String[] fields=pref.getKey().split("@");
+            Log.i("TLS13","prepare to navigate"+pref.getKey());
+            if(fields.length!=2 && pref.getKey().equals("server_settings_fragment"))
+            {
+                navController.navigate(R.id.action_newSettingsFragment_to_serverSettingsFragment);
+            }
+            else
+            {
+                if(fields[1].equals("server_settings_fragment"))
+                {
+                    Bundle bundle=new Bundle();
+                    bundle.putString("server_name",fields[0]);
+                    navController.navigate(R.id.action_newSettingsFragment_to_serverSettingsFragment,bundle);
+                }
+            }
+        }
+        return true;
     }
 }
 

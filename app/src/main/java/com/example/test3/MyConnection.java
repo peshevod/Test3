@@ -97,7 +97,7 @@ public class MyConnection implements Runnable {
             {
 //                response.close();
                 String auth = username + ":" + password;
-                byte[] encodedAuth = Base64.encode(auth.getBytes(StandardCharsets.UTF_8),Base64.NO_WRAP);
+                byte[] encodedAuth = Base64.encode(auth.getBytes(StandardCharsets.UTF_8),Base64.DEFAULT);
 //                        auth.getBytes(StandardCharsets.ISO_8859_1));
                 String authHeader = "Basic " + new String(encodedAuth);
                 request1.setHeader(HttpHeaders.AUTHORIZATION, authHeader);
