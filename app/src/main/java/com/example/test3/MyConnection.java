@@ -119,9 +119,10 @@ public class MyConnection implements Runnable {
                         n-=k;
                     }
                     String welcome=new String(bytes, 0,m,StandardCharsets.UTF_8);
-                    main.loginViewModel.getLoginRepository().setLoggedInUser(new LoggedInUser("007",welcome));
+                    LoggedInUser loggedInUser=new LoggedInUser(username,password,main.host.getHostName(),"007",welcome);
+                    main.loginViewModel.getLoginRepository().setLoggedInUser(loggedInUser);
                     main.login_state=MainActivity.LOGGED_IN;
-                    main.loginViewModel.getLoginResult().postValue(new LoginResult(new LoggedInUserView(welcome)));
+                    main.loginViewModel.getLoginResult().postValue(new LoginResult(loggedInUser));
                     Log.i("TLS13","user 007 "+welcome);
                 }
             }
