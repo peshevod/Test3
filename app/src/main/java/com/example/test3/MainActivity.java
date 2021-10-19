@@ -35,10 +35,14 @@ import com.google.firebase.messaging.FirebaseMessaging;
 
 import org.apache.hc.client5.http.impl.io.BasicHttpClientConnectionManager;
 import org.apache.hc.client5.http.impl.io.PoolingHttpClientConnectionManager;
+import org.apache.hc.client5.http.impl.nio.PoolingAsyncClientConnectionManager;
+import org.apache.hc.client5.http.impl.nio.PoolingAsyncClientConnectionManagerBuilder;
 import org.apache.hc.client5.http.io.ConnectionEndpoint;
+import org.apache.hc.client5.http.nio.AsyncConnectionEndpoint;
 import org.apache.hc.client5.http.protocol.HttpClientContext;
 import org.apache.hc.client5.http.socket.ConnectionSocketFactory;
 import org.apache.hc.client5.http.socket.PlainConnectionSocketFactory;
+import org.apache.hc.client5.http.ssl.ClientTlsStrategyBuilder;
 import org.apache.hc.client5.http.ssl.DefaultHostnameVerifier;
 import org.apache.hc.client5.http.ssl.SSLConnectionSocketFactory;
 import org.apache.hc.core5.http.ConnectionReuseStrategy;
@@ -49,6 +53,7 @@ import org.apache.hc.core5.http.config.Registry;
 import org.apache.hc.core5.http.config.RegistryBuilder;
 import org.apache.hc.core5.http.impl.io.HttpRequestExecutor;
 import org.apache.hc.core5.http.io.SocketConfig;
+import org.apache.hc.core5.http.nio.ssl.TlsStrategy;
 import org.apache.hc.core5.http.protocol.BasicHttpContext;
 import org.apache.hc.core5.http.protocol.HttpContext;
 
@@ -85,7 +90,9 @@ public class MainActivity extends AppCompatActivity implements PreferenceFragmen
 
     public int login_state=NOT_CONNECTED;
     public PoolingHttpClientConnectionManager connMgr=null;
+    public PoolingAsyncClientConnectionManager asyncConnMgr=null;
     public ConnectionEndpoint conn;
+    public AsyncConnectionEndpoint asyncConn;
     public BasicHttpContext basicHttpContext;
     ExecutorService pool;
     public HttpHost host;
@@ -96,6 +103,26 @@ public class MainActivity extends AppCompatActivity implements PreferenceFragmen
     {
         super();
         main=this;
+    }
+
+    void createAsyncConnectionManager() {
+        try {
+            ctx = SSLContext.getInstance("TLSv1.3");
+            ctx.init(null, null, null);
+        } catch (KeyManagementException | NoSuchAlgorithmException e) {
+            Log.e(TAG, e.getMessage());
+        }
+        Log.i(TAG, " MySSLSocketFactory successfully created");
+        final TlsStrategy tlsStrategy = ClientTlsStrategyBuilder.create()
+                .setSslContext(ctx)
+                .setTlsVersions("TLSv1.3")
+                .setCiphers("TLS_AES_128_GCM_SHA256")
+                .build();
+        asyncConnMgr = PoolingAsyncClientConnectionManagerBuilder.create()
+                .setTlsStrategy(tlsStrategy)
+                .build();
+        basicHttpContext=new BasicHttpContext();
+        main.login_state=MainActivity.CONNECT_REQUIRED;
     }
 
     void createConnectionManager()

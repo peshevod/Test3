@@ -1,5 +1,8 @@
 package com.example.test3;
 
+import static android.icu.util.TimeUnit.*;
+
+import android.icu.util.TimeUnit;
 import android.util.Log;
 
 
@@ -19,11 +22,14 @@ import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpResponse;
 import org.apache.hc.client5.http.impl.classic.HttpClientBuilder;
 import org.apache.hc.client5.http.io.LeaseRequest;
+import org.apache.hc.client5.http.nio.AsyncConnectionEndpoint;
 import org.apache.hc.client5.http.protocol.HttpClientContext;
+import org.apache.hc.core5.concurrent.FutureCallback;
 import org.apache.hc.core5.http.HttpHeaders;
 import org.apache.hc.core5.http.HttpHost;
 import org.apache.hc.core5.http.HttpResponse;
 import org.apache.hc.core5.http.Method;
+import org.apache.hc.core5.http.impl.bootstrap.AsyncRequesterBootstrap;
 import org.apache.hc.core5.http.message.BasicClassicHttpRequest;
 import org.apache.hc.core5.util.TimeValue;
 import org.apache.hc.core5.util.Timeout;
@@ -32,6 +38,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
 import java.util.concurrent.TimeoutException;
 
 public class MyConnection implements Runnable {
@@ -161,11 +168,88 @@ public class MyConnection implements Runnable {
         return;
     }
 
+
+
+
+    public void asyncConnect() {
+        main.host = new HttpHost("https", hostname, port);
+        HttpRoute route = new HttpRoute(main.host);
+
+        FutureCallback<AsyncConnectionEndpoint> fcb_connect = new FutureCallback<AsyncConnectionEndpoint>() {
+
+            @Override
+            public void completed(AsyncConnectionEndpoint result) {
+                main.connected = true;
+                main.homeViewModel.postConnected(main.connected);
+                Log.i("TLS13", "Connected!");
+                main.asyncConnMgr.release(result, null, TimeValue.ofHours(1));
+                main.login_state = MainActivity.BASIC_LOGIN_REQUIRED;
+            }
+
+            @Override
+            public void failed(Exception ex) {
+                main.connected = false;
+                main.homeViewModel.postConnected(main.connected);
+                Log.e(TAG+" fcb_connect", ex.getMessage());
+           }
+
+            @Override
+            public void cancelled() {
+                main.connected = false;
+                main.homeViewModel.postConnected(main.connected);
+                Log.e(TAG+" fcb_connect", "Connection cancelled");
+            }
+        };
+
+
+        FutureCallback<AsyncConnectionEndpoint> fcb_lease = new FutureCallback<AsyncConnectionEndpoint>() {
+            @Override
+            public void completed(AsyncConnectionEndpoint result) {
+                main.asyncConn = result;
+                if (!main.asyncConn.isConnected()) {
+                    Log.i(TAG, "No connection yet, connecting...");
+                    main.asyncConnMgr.connect(main.asyncConn, AsyncRequesterBootstrap.bootstrap().create(), Timeout.ofMilliseconds(5000),
+                            null, main.basicHttpContext, fcb_connect);
+                }
+                else Log.i(TAG, "Connection is already opened");
+            }
+
+            @Override
+            public void failed(Exception ex) {
+                Log.e(TAG, ex.getMessage());
+                main.connected = false;
+                main.homeViewModel.postConnected(main.connected);
+                return;
+            }
+
+            @Override
+            public void cancelled() {
+                main.connected = false;
+                main.homeViewModel.postConnected(main.connected);
+                Log.e(TAG+" fcb_lease", "Connection cancelled");
+            }
+        };
+
+        long t0 = System.currentTimeMillis();
+        main.asyncConnMgr.lease("1", route, null, Timeout.ofMilliseconds(3000), fcb_lease);
+     }
+
     public void disconnect()
     {
         main.connMgr.release(main.conn, null, TimeValue.ofMilliseconds(10));
         try {
             main.conn.close();
+        } catch (IOException e) {
+        }
+        main.connected=false;
+        main.homeViewModel.postConnected(main.connected);
+    }
+
+    public void asyncDisconnect()
+    {
+        main.asyncConnMgr.release(main.asyncConn, null, TimeValue.ofMilliseconds(10));
+        try {
+            main.asyncConn.close();
         } catch (IOException e) {
         }
         main.connected=false;
