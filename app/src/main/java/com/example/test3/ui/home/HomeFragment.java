@@ -127,11 +127,13 @@ public class HomeFragment extends Fragment {
                     progressBar1.setVisibility(View.VISIBLE);
                     if(!homeViewModel.getConnected().getValue()) {
                         goToLogin=true;
-                        main.connect(hostname,port);
+//                        main.connect(hostname,port);
+                        main.asyncConnection.asyncConnect(hostname, port);
                     }
                     else
                     {
-                        main.disconnect();
+//                        main.disconnect();
+                          main.asyncConnection.asyncDisconnect();
                     }
 
                     Log.i("TLS13","connected settings");

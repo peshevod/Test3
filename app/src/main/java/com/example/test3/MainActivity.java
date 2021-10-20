@@ -90,39 +90,18 @@ public class MainActivity extends AppCompatActivity implements PreferenceFragmen
 
     public int login_state=NOT_CONNECTED;
     public PoolingHttpClientConnectionManager connMgr=null;
-    public PoolingAsyncClientConnectionManager asyncConnMgr=null;
     public ConnectionEndpoint conn;
-    public AsyncConnectionEndpoint asyncConn;
     public BasicHttpContext basicHttpContext;
     ExecutorService pool;
     public HttpHost host;
     public HttpClientContext context;
     public HttpRequestExecutor httpRequestExecutor;
+    public MyAsyncConnection asyncConnection;
 
     public MainActivity()
     {
         super();
         main=this;
-    }
-
-    void createAsyncConnectionManager() {
-        try {
-            ctx = SSLContext.getInstance("TLSv1.3");
-            ctx.init(null, null, null);
-        } catch (KeyManagementException | NoSuchAlgorithmException e) {
-            Log.e(TAG, e.getMessage());
-        }
-        Log.i(TAG, " MySSLSocketFactory successfully created");
-        final TlsStrategy tlsStrategy = ClientTlsStrategyBuilder.create()
-                .setSslContext(ctx)
-                .setTlsVersions("TLSv1.3")
-                .setCiphers("TLS_AES_128_GCM_SHA256")
-                .build();
-        asyncConnMgr = PoolingAsyncClientConnectionManagerBuilder.create()
-                .setTlsStrategy(tlsStrategy)
-                .build();
-        basicHttpContext=new BasicHttpContext();
-        main.login_state=MainActivity.CONNECT_REQUIRED;
     }
 
     void createConnectionManager()
@@ -172,6 +151,11 @@ public class MainActivity extends AppCompatActivity implements PreferenceFragmen
     public void connect(String hostname,int port)
     {
         pool.execute(new MyConnection( this, hostname, port));
+    }
+
+    public void asyncConnect(String hostname,int port)
+    {
+        (new MyConnection( this, hostname, port)).run();
     }
 
     public void disconnect()
@@ -229,6 +213,7 @@ public class MainActivity extends AppCompatActivity implements PreferenceFragmen
                 });
 
       createConnectionManager();
+      asyncConnection=new MyAsyncConnection(this);
 //        TLS13 tls=new TLS13(this, homeViewModel, sharedPreferences.getString("server_string", "mm304.asuscomm.com"), Integer.parseInt(sharedPreferences.getString("server_port", "51443")) );
 //        loginViewModel.setTLS(tls);
 //        Log.i("TLS13","TLS "+main.tls.toString());

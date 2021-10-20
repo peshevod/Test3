@@ -52,6 +52,9 @@ public class MyConnection implements Runnable {
     public static final int CMD_DISCONNECT=0;
     public static final int CMD_CONNECT=1;
     public static final int CMD_LOGIN=2;
+    public static final int CMD_ASYNC_DISCONNECT=10;
+    public static final int CMD_ASYNC_CONNECT=11;
+    public static final int CMD_ASYNC_LOGIN=12;
     int cmd;
 //    MyConnectionCallback<Boolean> callback;
     int port;
@@ -168,88 +171,11 @@ public class MyConnection implements Runnable {
         return;
     }
 
-
-
-
-    public void asyncConnect() {
-        main.host = new HttpHost("https", hostname, port);
-        HttpRoute route = new HttpRoute(main.host);
-
-        FutureCallback<AsyncConnectionEndpoint> fcb_connect = new FutureCallback<AsyncConnectionEndpoint>() {
-
-            @Override
-            public void completed(AsyncConnectionEndpoint result) {
-                main.connected = true;
-                main.homeViewModel.postConnected(main.connected);
-                Log.i("TLS13", "Connected!");
-                main.asyncConnMgr.release(result, null, TimeValue.ofHours(1));
-                main.login_state = MainActivity.BASIC_LOGIN_REQUIRED;
-            }
-
-            @Override
-            public void failed(Exception ex) {
-                main.connected = false;
-                main.homeViewModel.postConnected(main.connected);
-                Log.e(TAG+" fcb_connect", ex.getMessage());
-           }
-
-            @Override
-            public void cancelled() {
-                main.connected = false;
-                main.homeViewModel.postConnected(main.connected);
-                Log.e(TAG+" fcb_connect", "Connection cancelled");
-            }
-        };
-
-
-        FutureCallback<AsyncConnectionEndpoint> fcb_lease = new FutureCallback<AsyncConnectionEndpoint>() {
-            @Override
-            public void completed(AsyncConnectionEndpoint result) {
-                main.asyncConn = result;
-                if (!main.asyncConn.isConnected()) {
-                    Log.i(TAG, "No connection yet, connecting...");
-                    main.asyncConnMgr.connect(main.asyncConn, AsyncRequesterBootstrap.bootstrap().create(), Timeout.ofMilliseconds(5000),
-                            null, main.basicHttpContext, fcb_connect);
-                }
-                else Log.i(TAG, "Connection is already opened");
-            }
-
-            @Override
-            public void failed(Exception ex) {
-                Log.e(TAG, ex.getMessage());
-                main.connected = false;
-                main.homeViewModel.postConnected(main.connected);
-                return;
-            }
-
-            @Override
-            public void cancelled() {
-                main.connected = false;
-                main.homeViewModel.postConnected(main.connected);
-                Log.e(TAG+" fcb_lease", "Connection cancelled");
-            }
-        };
-
-        long t0 = System.currentTimeMillis();
-        main.asyncConnMgr.lease("1", route, null, Timeout.ofMilliseconds(3000), fcb_lease);
-     }
-
     public void disconnect()
     {
         main.connMgr.release(main.conn, null, TimeValue.ofMilliseconds(10));
         try {
             main.conn.close();
-        } catch (IOException e) {
-        }
-        main.connected=false;
-        main.homeViewModel.postConnected(main.connected);
-    }
-
-    public void asyncDisconnect()
-    {
-        main.asyncConnMgr.release(main.asyncConn, null, TimeValue.ofMilliseconds(10));
-        try {
-            main.asyncConn.close();
         } catch (IOException e) {
         }
         main.connected=false;
