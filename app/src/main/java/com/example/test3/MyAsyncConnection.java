@@ -49,7 +49,7 @@ import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLEngine;
 import javax.net.ssl.SSLSession;
 
-public class MyAsyncConnection {
+public class MyAsyncConnection implements Runnable{
 
     SSLContext ctx=null;
     BasicHttpContext basicHttpContext;
@@ -120,5 +120,10 @@ public class MyAsyncConnection {
         }
         main.connected=false;
         main.homeViewModel.postConnected(main.connected);
+    }
+
+    @Override
+    public void run() {
+
     }
 }

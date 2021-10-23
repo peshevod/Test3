@@ -1,7 +1,12 @@
 package com.example.test3;
 
+import android.content.ComponentName;
+import android.content.Context;
+import android.content.Intent;
+import android.content.ServiceConnection;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.os.IBinder;
 import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
@@ -69,6 +74,8 @@ import javax.net.ssl.SSLContext;
 
 public class MainActivity extends AppCompatActivity implements PreferenceFragmentCompat.OnPreferenceStartFragmentCallback{
 
+    MyAsyncConnectionService myAsyncConnectionService;
+    boolean mBound = false;
     private AppBarConfiguration mAppBarConfiguration;
     private ActivityMainBinding binding;
     private NavHeaderMainBinding navbind;
@@ -213,7 +220,7 @@ public class MainActivity extends AppCompatActivity implements PreferenceFragmen
                 });
 
       createConnectionManager();
-      asyncConnection=new MyAsyncConnection(this);
+//      asyncConnection=new MyAsyncConnection(this);
 //        TLS13 tls=new TLS13(this, homeViewModel, sharedPreferences.getString("server_string", "mm304.asuscomm.com"), Integer.parseInt(sharedPreferences.getString("server_port", "51443")) );
 //        loginViewModel.setTLS(tls);
 //        Log.i("TLS13","TLS "+main.tls.toString());
@@ -305,9 +312,35 @@ public class MainActivity extends AppCompatActivity implements PreferenceFragmen
         }
         return super.onOptionsItemSelected(item);
     }
+
+    private ServiceConnection serviceConnection = new ServiceConnection() {
+
+        @Override
+        public void onServiceConnected(ComponentName className,
+                                       IBinder service) {
+            MyAsyncConnectionService.MyAsyncConnectionIBinder binder = (MyAsyncConnectionService.MyAsyncConnectionIBinder) service;
+            myAsyncConnectionService = binder.getService();
+            mBound = true;
+        }
+
+        @Override
+        public void onServiceDisconnected(ComponentName arg0) {
+            mBound = false;
+        }
+    };
+
     @Override
     public void onStart() {
         super.onStart();
+        Intent intent = new Intent(this, MyAsyncConnectionService.class);
+        bindService(intent, serviceConnection, Context.BIND_AUTO_CREATE);
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        unbindService(serviceConnection);
+        mBound = false;
     }
 
     @Override
