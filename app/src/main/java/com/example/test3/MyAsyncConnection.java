@@ -103,7 +103,7 @@ public class MyAsyncConnection {
 
 
         MyCloseableHttpAsyncClient myClient=new MyCloseableHttpAsyncClient(main, hostname, port, client);
-        myClient.run();
+        new Thread(myClient).run();
         try {
             myClient.future.get();
         } catch (ExecutionException | InterruptedException e) {
