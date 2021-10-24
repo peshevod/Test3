@@ -51,79 +51,81 @@ import javax.net.ssl.SSLSession;
 
 public class MyAsyncConnection implements Runnable{
 
-    SSLContext ctx=null;
-    BasicHttpContext basicHttpContext;
-    MainActivity main;
-    PoolingAsyncClientConnectionManager asyncConnMgr;
-    String TAG="TLS13";
-    AsyncConnectionEndpoint asyncConn;
-    TlsStrategy tlsStrategy;
-    CloseableHttpAsyncClient client;
+    MyAsyncConnectionService service;
+    final String TAG="TLS13";
+    public final static int CMD_DISCONNECT=0;
+    public final static int CMD_CONNECT=1;
+    public final static int CMD_LOGIN=1;
+    final HttpClientContext clientContext = HttpClientContext.create();
 
-    public MyAsyncConnection(MainActivity main) {
-        this.main=main;
-/*        if (android.os.Build.VERSION.SDK_INT > 9) {
-            StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll().build();
-            StrictMode.setThreadPolicy(policy);
-        }*/
-        try {
-            ctx = SSLContext.getInstance("TLSv1.3");
-            ctx.init(null, null, null);
-        } catch (KeyManagementException | NoSuchAlgorithmException e) {
-            Log.e(TAG, e.getMessage());
-        }
-        Log.i(TAG, " MySSLSocketFactory successfully created");
-        tlsStrategy = ClientTlsStrategyBuilder.create()
-                .setSslContext(ctx)
-                .setTlsVersions("TLSv1.3")
-                .setCiphers("TLS_AES_128_GCM_SHA256")
-                .setHostnameVerifier(new DefaultHostnameVerifier(null))
- /*               .setTlsDetailsFactory(new Factory<SSLEngine, TlsDetails>() {
-                    @Override
-                    public TlsDetails create(final SSLEngine sslEngine) {
-                        return new TlsDetails(sslEngine.getSession(), sslEngine.getApplicationProtocol());
-                    }
-                })*/
-                .build();
-        this.asyncConnMgr = PoolingAsyncClientConnectionManagerBuilder.create()
-                .setTlsStrategy(tlsStrategy)
-                .build();
-        client= HttpAsyncClients.custom()
-                .setConnectionManager(asyncConnMgr)
-                .build();
-//        client.start();
-        basicHttpContext=new BasicHttpContext();
-        main.login_state=MainActivity.CONNECT_REQUIRED;
+
+    public MyAsyncConnection(MyAsyncConnectionService service) {
+        this.service=service;
     }
 
-    public void asyncConnect(String hostname, int port) {
 //        main.host = new HttpHost("https", hostname, port);
 //        final HttpClientContext clientContext = HttpClientContext.create();
 
 
 
-        MyCloseableHttpAsyncClient myClient=new MyCloseableHttpAsyncClient(main, hostname, port, client);
-        new Thread(myClient).run();
-        try {
-            myClient.future.get();
-        } catch (ExecutionException | InterruptedException e) {
-            Log.e(TAG+ " asyncConnect",e.getMessage());
-        }
-    }
-
-    public void asyncDisconnect()
+    final FutureCallback<SimpleHttpResponse> futureCallback=new FutureCallback<SimpleHttpResponse>()
     {
-        asyncConnMgr.release(asyncConn, null, TimeValue.ofMilliseconds(10));
-        try {
-            asyncConn.close();
-        } catch (IOException e) {
+
+        @Override
+        public void completed(final SimpleHttpResponse response) {
+            Log.i(TAG+ " asyncConnect", new StatusLine(response).toString());
+            final SSLSession sslSession = clientContext.getSSLSession();
+            if (sslSession != null) {
+                Log.i(TAG+ " asyncConnect","SSL protocol " + sslSession.getProtocol());
+                Log.i(TAG+ " asyncConnect","SSL cipher suite " + sslSession.getCipherSuite());
+                Log.i(TAG+ " asyncConnect","Connected!");
+                service.main.connected=true;
+                service.main.login_state=MainActivity.BASIC_LOGIN_REQUIRED;
+                service.main.homeViewModel.postConnected(service.main.connected);
+            }
+            Log.i(TAG+ " asyncConnect",response.getBody().toString());
         }
-        main.connected=false;
-        main.homeViewModel.postConnected(main.connected);
-    }
+
+        @Override
+        public void failed(final Exception ex) {
+            service.main.connected=false;
+            service.main.homeViewModel.postConnected(service.main.connected);
+            Log.e(TAG+ " asyncConnect", ex.getMessage());
+        }
+
+        @Override
+        public void cancelled() {
+            service.main.connected=false;
+            service.main.homeViewModel.postConnected(service.main.connected);
+            Log.e(TAG+ " asyncConnect","Canceled");
+        }
+    };
 
     @Override
     public void run() {
-
+        Log.i(TAG+ " MyAsyncConnection","Thread id="+Thread.currentThread().getId());
+        switch (service.cmd) {
+            case CMD_CONNECT:
+                final HttpHost host = new HttpHost("https", service.hostname, service.port);
+                final SimpleHttpRequest request = SimpleHttpRequests.get(host, "/login");
+                final Future<SimpleHttpResponse> future = service.myAsyncConnectionClient.client.execute(
+                        SimpleRequestProducer.create(request),
+                        SimpleResponseConsumer.create(),
+                        clientContext,
+                        futureCallback
+                );
+                try {
+                    future.get();
+                } catch (ExecutionException | InterruptedException e) {
+                    Log.e(TAG, e.getMessage());
+                }
+                break;
+            case CMD_DISCONNECT:
+                try {
+                    service.myAsyncConnectionClient.client.close();
+                } catch (IOException e) {
+                    Log.e(TAG, e.getMessage());
+                }
+        }
     }
 }

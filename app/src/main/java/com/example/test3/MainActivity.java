@@ -74,7 +74,7 @@ import javax.net.ssl.SSLContext;
 
 public class MainActivity extends AppCompatActivity implements PreferenceFragmentCompat.OnPreferenceStartFragmentCallback{
 
-    MyAsyncConnectionService myAsyncConnectionService;
+    public MyAsyncConnectionService myAsyncConnectionService;
     boolean mBound = false;
     private AppBarConfiguration mAppBarConfiguration;
     private ActivityMainBinding binding;
@@ -219,7 +219,7 @@ public class MainActivity extends AppCompatActivity implements PreferenceFragmen
                     }
                 });
 
-      createConnectionManager();
+//      createConnectionManager();
 //      asyncConnection=new MyAsyncConnection(this);
 //        TLS13 tls=new TLS13(this, homeViewModel, sharedPreferences.getString("server_string", "mm304.asuscomm.com"), Integer.parseInt(sharedPreferences.getString("server_port", "51443")) );
 //        loginViewModel.setTLS(tls);
@@ -320,6 +320,8 @@ public class MainActivity extends AppCompatActivity implements PreferenceFragmen
                                        IBinder service) {
             MyAsyncConnectionService.MyAsyncConnectionIBinder binder = (MyAsyncConnectionService.MyAsyncConnectionIBinder) service;
             myAsyncConnectionService = binder.getService();
+            myAsyncConnectionService.main=MainActivity.this;
+            Log.i(TAG+ "Service Connection","Thread id="+Thread.currentThread().getId());
             mBound = true;
         }
 
@@ -334,6 +336,7 @@ public class MainActivity extends AppCompatActivity implements PreferenceFragmen
         super.onStart();
         Intent intent = new Intent(this, MyAsyncConnectionService.class);
         bindService(intent, serviceConnection, Context.BIND_AUTO_CREATE);
+        login_state=MainActivity.CONNECT_REQUIRED;
     }
 
     @Override
