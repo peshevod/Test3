@@ -22,9 +22,9 @@ public class MyAsyncConnetcionClient implements Runnable{
     public CloseableHttpAsyncClient client;
     MyAsyncConnectionService service;
     SSLContext ctx=null;
-    PoolingAsyncClientConnectionManager asyncConnMgr;
+    public PoolingAsyncClientConnectionManager asyncConnMgr;
     String TAG="TLS13 Client";
-    TlsStrategy tlsStrategy;
+    public TlsStrategy tlsStrategy;
 
     public MyAsyncConnetcionClient(MyAsyncConnectionService service)
     {
@@ -51,9 +51,9 @@ public class MyAsyncConnetcionClient implements Runnable{
                 .setDnsResolver(SystemDefaultDnsResolver.INSTANCE)
                 .setTlsStrategy(tlsStrategy)
                 .build();
-        client= HttpAsyncClients.custom()
+/*        client= HttpAsyncClients.custom()
                 .setConnectionManager(asyncConnMgr)
                 .build();
-        client.start();
+        client.start();*/
     }
 }
