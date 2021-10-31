@@ -27,7 +27,7 @@ public class ServerSettingsFragment extends PreferenceFragmentCompat {
     String oldServer;
 
 
-    private void createListeners(PreferenceCategory server) {
+    private void createListeners(final PreferenceCategory server) {
         server.findPreference(oldServer!=null ? oldServer+"@server_name" : "server_name").setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
             @Override
             public boolean onPreferenceChange(Preference preference, Object newValue) {

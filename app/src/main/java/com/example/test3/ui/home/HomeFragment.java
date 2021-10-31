@@ -128,12 +128,14 @@ public class HomeFragment extends Fragment {
                     if(!homeViewModel.getConnected().getValue()) {
                         goToLogin=true;
 //                        main.connect(hostname,port);
-                        main.myAsyncConnectionService.asyncConnect(hostname, port);
+//                        main.myAsyncConnectionService.asyncConnect(hostname, port);
+                        main.shConnectionService.connect(hostname,port);
                     }
                     else
                     {
 //                        main.disconnect();
-                          main.myAsyncConnectionService.asyncDisconnect();
+//                          main.myAsyncConnectionService.asyncDisconnect();
+                        main.shConnectionService.disconnect();
                     }
 
                     Log.i("TLS13","connected settings");

@@ -1,60 +1,45 @@
 package com.example.test3;
 
-import android.os.StrictMode;
 import android.util.Log;
 
 import org.apache.hc.client5.http.HttpRoute;
-import org.apache.hc.client5.http.async.methods.SimpleHttpRequest;
-import org.apache.hc.client5.http.async.methods.SimpleHttpRequests;
 import org.apache.hc.client5.http.async.methods.SimpleHttpResponse;
-import org.apache.hc.client5.http.async.methods.SimpleRequestProducer;
-import org.apache.hc.client5.http.async.methods.SimpleResponseConsumer;
-import org.apache.hc.client5.http.impl.async.CloseableHttpAsyncClient;
-import org.apache.hc.client5.http.impl.async.HttpAsyncClients;
-import org.apache.hc.client5.http.impl.nio.PoolingAsyncClientConnectionManager;
-import org.apache.hc.client5.http.impl.nio.PoolingAsyncClientConnectionManagerBuilder;
 import org.apache.hc.client5.http.nio.AsyncConnectionEndpoint;
 import org.apache.hc.client5.http.protocol.HttpClientContext;
-import org.apache.hc.client5.http.ssl.ClientTlsStrategyBuilder;
-import org.apache.hc.client5.http.ssl.DefaultHostnameVerifier;
+import org.apache.hc.core5.concurrent.DefaultThreadFactory;
 import org.apache.hc.core5.concurrent.FutureCallback;
-import org.apache.hc.core5.function.Factory;
-import org.apache.hc.core5.http.ConnectionReuseStrategy;
+import org.apache.hc.core5.http.HttpException;
 import org.apache.hc.core5.http.HttpHost;
 import org.apache.hc.core5.http.HttpRequest;
 import org.apache.hc.core5.http.HttpRequestInterceptor;
-import org.apache.hc.core5.http.HttpResponse;
+import org.apache.hc.core5.http.config.CharCodingConfig;
 import org.apache.hc.core5.http.config.Http1Config;
+import org.apache.hc.core5.http.impl.DefaultConnectionReuseStrategy;
 import org.apache.hc.core5.http.impl.HttpProcessors;
 import org.apache.hc.core5.http.impl.bootstrap.AsyncRequesterBootstrap;
 import org.apache.hc.core5.http.impl.bootstrap.HttpAsyncRequester;
 import org.apache.hc.core5.http.impl.nio.ClientHttp1IOEventHandlerFactory;
 import org.apache.hc.core5.http.impl.nio.ClientHttp1StreamDuplexerFactory;
 import org.apache.hc.core5.http.message.StatusLine;
-import org.apache.hc.core5.http.nio.ssl.TlsStrategy;
-import org.apache.hc.core5.http.protocol.BasicHttpContext;
+import org.apache.hc.core5.http.nio.AsyncPushConsumer;
+import org.apache.hc.core5.http.nio.command.ShutdownCommand;
 import org.apache.hc.core5.http.protocol.DefaultHttpProcessor;
 import org.apache.hc.core5.http.protocol.HttpContext;
-import org.apache.hc.core5.net.NamedEndpoint;
-import org.apache.hc.core5.reactor.ConnectionInitiator;
+import org.apache.hc.core5.http2.HttpVersionPolicy;
+import org.apache.hc.core5.http2.config.H2Config;
+import org.apache.hc.core5.http2.protocol.H2RequestConnControl;
+import org.apache.hc.core5.http2.protocol.H2RequestContent;
+import org.apache.hc.core5.http2.protocol.H2RequestTargetHost;
+import org.apache.hc.core5.io.CloseMode;
+import org.apache.hc.core5.reactor.Command;
 import org.apache.hc.core5.reactor.DefaultConnectingIOReactor;
+import org.apache.hc.core5.reactor.IOEventHandlerFactory;
 import org.apache.hc.core5.reactor.IOReactorConfig;
-import org.apache.hc.core5.reactor.IOSession;
-import org.apache.hc.core5.reactor.ssl.TlsDetails;
-import org.apache.hc.core5.util.TimeValue;
 import org.apache.hc.core5.util.Timeout;
 
-import java.io.IOException;
-import java.net.InetAddress;
-import java.net.SocketAddress;
-import java.net.UnknownHostException;
-import java.security.KeyManagementException;
-import java.security.NoSuchAlgorithmException;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 
-import javax.net.ssl.SSLContext;
-import javax.net.ssl.SSLEngine;
 import javax.net.ssl.SSLSession;
 
 public class MyAsyncConnection implements Runnable{
@@ -64,7 +49,7 @@ public class MyAsyncConnection implements Runnable{
     public final static int CMD_DISCONNECT=0;
     public final static int CMD_CONNECT=1;
     public final static int CMD_LOGIN=1;
-    final HttpClientContext clientContext = HttpClientContext.create();
+    HttpClientContext clientContext = HttpClientContext.create();
     AsyncConnectionEndpoint asyncConnectionEndpoint;
 
     public MyAsyncConnection(MyAsyncConnectionService service) {
@@ -141,31 +126,67 @@ public class MyAsyncConnection implements Runnable{
                     return;
                 }
                 Log.i(TAG," Lease Success trying connect to "+service.hostname+":"+service.port);
-                HttpRequestInterceptor httpRequestInterceptor=null;
-/*                DefaultConnectingIOReactor defaultConnectingIOReactor=
+                DefaultConnectingIOReactor defaultConnectingIOReactor=
                 new DefaultConnectingIOReactor(
-                        new ClientHttp1IOEventHandlerFactory(
+                        new MyIOHandlerFactory()
+/*                        new ClientHttp1IOEventHandlerFactory(
                                 new ClientHttp1StreamDuplexerFactory(
                                         HttpProcessors.client(),null,null
-                                ),service.myAsyncConnectionClient.tlsStrategy,Timeout.ofSeconds(5)
-                        )
+                               ),new MyClientTlsStrategy(),Timeout.ofSeconds(5)
+//                            ),null,Timeout.ofSeconds(5)
+                        )*/
                 );
-                defaultConnectingIOReactor.start();*/
-                HttpAsyncRequester httpAsyncRequester=
+                defaultConnectingIOReactor.start();
+/*               HttpAsyncRequester httpAsyncRequester=
                         AsyncRequesterBootstrap.bootstrap()
+//                                .setTlsStrategy(new EmptyClientTlsStrategy())
+                                .setTlsStrategy(new MyClientTlsStrategy())
 //                                .setTlsStrategy(service.myAsyncConnectionClient.tlsStrategy)
                                 .setTlsHandshakeTimeout(Timeout.ofSeconds(5))
-                                .setIOReactorConfig(IOReactorConfig.custom().setIoThreadCount(1).build())
+                                .setIOReactorConfig(IOReactorConfig.DEFAULT)
                                 .setHttp1Config(Http1Config.DEFAULT)
                                 .create();
-                httpAsyncRequester.start();
+                httpAsyncRequester.start();*/
+//                final AsyncPushConsumerRegistry pushConsumerRegistry = new AsyncPushConsumerRegistry();
+/*                final IOEventHandlerFactory ioEventHandlerFactory = new HttpAsyncClientEventHandlerFactory(
+                        new DefaultHttpProcessor(new H2RequestContent(), new H2RequestTargetHost(), new H2RequestConnControl()),
+                        new HandlerFactory<AsyncPushConsumer>() {
+
+                            @Override
+                            public AsyncPushConsumer create(final HttpRequest request, final HttpContext context) throws HttpException {
+//                                return pushConsumerRegistry.get(request);
+                                return null;
+                            }
+
+                        },
+                        HttpVersionPolicy.NEGOTIATE,
+                        H2Config.DEFAULT,
+                        Http1Config.DEFAULT,
+                        CharCodingConfig.DEFAULT,
+                        DefaultConnectionReuseStrategy.INSTANCE);
+                final DefaultConnectingIOReactor ioReactor = new DefaultConnectingIOReactor(
+                        ioEventHandlerFactory,
+                        IOReactorConfig.DEFAULT,
+                        new DefaultThreadFactory("httpclient-dispatch", true),
+                        LoggingIOSessionDecorator.INSTANCE,
+                        LoggingExceptionCallback.INSTANCE,
+                        null,
+                        new Callback<IOSession>() {
+
+                            @Override
+                            public void execute(final IOSession ioSession) {
+                                ioSession.enqueue(new ShutdownCommand(CloseMode.GRACEFUL), Command.Priority.IMMEDIATE);
+                            }
+
+                        });*/
 
                 Future<AsyncConnectionEndpoint> connectFuture=service.myAsyncConnectionClient.asyncConnMgr
                         .connect(asyncConnectionEndpoint,
-//                                 defaultConnectingIOReactor,
-                                httpAsyncRequester,
+                                 defaultConnectingIOReactor,
+//                                 httpAsyncRequester,
+//                                 ioReactor,
                                  Timeout.ofSeconds(1),
-                                null,
+                                HttpVersionPolicy.FORCE_HTTP_1,
                                 clientContext,
                                 new FutureCallback<AsyncConnectionEndpoint>() {
                                     @Override

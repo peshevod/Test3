@@ -16,6 +16,9 @@ import android.widget.ProgressBar;
 import com.example.test3.databinding.NavHeaderMainBinding;
 import com.example.test3.ui.home.HomeViewModel;
 import com.example.test3.ui.login.LoginViewModel;
+import com.google.android.gms.common.GooglePlayServicesNotAvailableException;
+import com.google.android.gms.common.GooglePlayServicesRepairableException;
+import com.google.android.gms.security.ProviderInstaller;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.android.material.snackbar.Snackbar;
@@ -75,7 +78,9 @@ import javax.net.ssl.SSLContext;
 public class MainActivity extends AppCompatActivity implements PreferenceFragmentCompat.OnPreferenceStartFragmentCallback{
 
     public MyAsyncConnectionService myAsyncConnectionService;
+    public SHConnectionService shConnectionService;
     boolean mBound = false;
+    boolean mAsyncBound = false;
     private AppBarConfiguration mAppBarConfiguration;
     private ActivityMainBinding binding;
     private NavHeaderMainBinding navbind;
@@ -179,6 +184,7 @@ public class MainActivity extends AppCompatActivity implements PreferenceFragmen
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
+        System.setProperty("java.net.preferIPv4Stack" , "true");
         binding = ActivityMainBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
         connected=false;
@@ -313,7 +319,7 @@ public class MainActivity extends AppCompatActivity implements PreferenceFragmen
         return super.onOptionsItemSelected(item);
     }
 
-    private ServiceConnection serviceConnection = new ServiceConnection() {
+    private ServiceConnection serviceAsyncConnection = new ServiceConnection() {
 
         @Override
         public void onServiceConnected(ComponentName className,
@@ -321,28 +327,49 @@ public class MainActivity extends AppCompatActivity implements PreferenceFragmen
             MyAsyncConnectionService.MyAsyncConnectionIBinder binder = (MyAsyncConnectionService.MyAsyncConnectionIBinder) service;
             myAsyncConnectionService = binder.getService();
             myAsyncConnectionService.main=MainActivity.this;
+            Log.i(TAG+ "Service Async Connection","Thread id="+Thread.currentThread().getId());
+            mAsyncBound = true;
+        }
+
+
+            @Override
+            public void onServiceDisconnected(ComponentName arg0) {
+            mAsyncBound = false;
+        }
+    };
+
+    private ServiceConnection serviceConnection = new ServiceConnection() {
+
+        @Override
+        public void onServiceConnected(ComponentName className,
+                                       IBinder service) {
+            SHConnectionService.SHConnectionIBinder binder = (SHConnectionService.SHConnectionIBinder) service;
+            shConnectionService = binder.getService();
+            shConnectionService.main=MainActivity.this;
             Log.i(TAG+ "Service Connection","Thread id="+Thread.currentThread().getId());
             mBound = true;
         }
-
         @Override
         public void onServiceDisconnected(ComponentName arg0) {
             mBound = false;
         }
     };
 
+
     @Override
     public void onStart() {
         super.onStart();
-        Intent intent = new Intent(this, MyAsyncConnectionService.class);
-        bindService(intent, serviceConnection, Context.BIND_AUTO_CREATE);
+//        Intent asyncIntent = new Intent(this, MyAsyncConnectionService.class);
+//        bindService(asyncIntent, serviceAsyncConnection, Context.BIND_AUTO_CREATE);
+        Intent Intent = new Intent(this, SHConnectionService.class);
+        bindService(Intent, serviceConnection, Context.BIND_AUTO_CREATE);
         login_state=MainActivity.CONNECT_REQUIRED;
     }
 
     @Override
     protected void onStop() {
         super.onStop();
-        unbindService(serviceConnection);
+        unbindService(serviceAsyncConnection);
         mBound = false;
     }
 

@@ -1,15 +1,14 @@
 package com.example.test3;
 
-import android.os.IBinder;
 import android.util.Log;
 
 import org.apache.hc.client5.http.SystemDefaultDnsResolver;
 import org.apache.hc.client5.http.impl.async.CloseableHttpAsyncClient;
-import org.apache.hc.client5.http.impl.async.HttpAsyncClients;
 import org.apache.hc.client5.http.impl.nio.PoolingAsyncClientConnectionManager;
 import org.apache.hc.client5.http.impl.nio.PoolingAsyncClientConnectionManagerBuilder;
 import org.apache.hc.client5.http.ssl.ClientTlsStrategyBuilder;
 import org.apache.hc.client5.http.ssl.DefaultHostnameVerifier;
+import org.apache.hc.client5.http.ssl.HttpsSupport;
 import org.apache.hc.core5.http.nio.ssl.TlsStrategy;
 
 import java.security.KeyManagementException;
@@ -45,11 +44,12 @@ public class MyAsyncConnetcionClient implements Runnable{
                 .setSslContext(ctx)
                 .setTlsVersions("TLSv1.3")
                 .setCiphers("TLS_AES_128_GCM_SHA256")
-                .setHostnameVerifier(new DefaultHostnameVerifier(null))
+                .setHostnameVerifier(HttpsSupport.getDefaultHostnameVerifier())
                 .build();
         asyncConnMgr = PoolingAsyncClientConnectionManagerBuilder.create()
                 .setDnsResolver(SystemDefaultDnsResolver.INSTANCE)
-                .setTlsStrategy(tlsStrategy)
+//                .setTlsStrategy(new EmptyClientTlsStrategy())
+                .setTlsStrategy(new MyClientTlsStrategy(service))
                 .build();
 /*        client= HttpAsyncClients.custom()
                 .setConnectionManager(asyncConnMgr)

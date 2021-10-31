@@ -30,7 +30,7 @@ public class SettingsFragment extends PreferenceFragmentCompat {
     SharedPreferences.OnSharedPreferenceChangeListener listener;
     Set<String> availableServers;
 
-    private void createListeners(PreferenceCategory server) {
+    private void createListeners(final PreferenceCategory server) {
         server.findPreference("server_name").setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
             @Override
             public boolean onPreferenceChange(Preference preference, Object newValue) {
