@@ -89,7 +89,7 @@ public class LoginFragment extends Fragment {
             String lastUser;
             String lastPassword;
 
-            if((lastUser=sharedPreferences.getString("last_user@"+main.host.getHostName(),null))!=null)
+/*            if((lastUser=sharedPreferences.getString("last_user@"+main.host.getHostName(),null))!=null)
             {
                 String encrypted=sharedPreferences.getString(lastUser+"@"+main.host.getHostName(),null);
                 if(encrypted!=null)
@@ -101,7 +101,7 @@ public class LoginFragment extends Fragment {
                         passwordEditText.setText(lastPassword);
                     }
                 }
-            }
+            }*/
         }
         else remember.setChecked(false);
     }

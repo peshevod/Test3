@@ -2,6 +2,9 @@ package com.example.test3;
 
 import android.util.Log;
 
+import org.apache.hc.client5.http.config.RequestConfig;
+import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
+import org.apache.hc.client5.http.impl.classic.HttpClientBuilder;
 import org.apache.hc.client5.http.impl.io.PoolingHttpClientConnectionManager;
 import org.apache.hc.client5.http.impl.io.PoolingHttpClientConnectionManagerBuilder;
 import org.apache.hc.client5.http.impl.nio.PoolingAsyncClientConnectionManager;
@@ -10,9 +13,15 @@ import org.apache.hc.client5.http.socket.PlainConnectionSocketFactory;
 import org.apache.hc.client5.http.ssl.DefaultHostnameVerifier;
 import org.apache.hc.client5.http.ssl.SSLConnectionSocketFactory;
 import org.apache.hc.client5.http.ssl.SSLConnectionSocketFactoryBuilder;
+import org.apache.hc.core5.http.ConnectionReuseStrategy;
+import org.apache.hc.core5.http.HttpRequest;
+import org.apache.hc.core5.http.HttpResponse;
 import org.apache.hc.core5.http.config.Registry;
 import org.apache.hc.core5.http.config.RegistryBuilder;
+import org.apache.hc.core5.http.impl.io.HttpRequestExecutor;
+import org.apache.hc.core5.http.protocol.HttpContext;
 import org.apache.hc.core5.http.ssl.TLS;
+import org.apache.hc.core5.util.Timeout;
 
 import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
@@ -26,7 +35,8 @@ public class SHConnectionClient {
     public PoolingHttpClientConnectionManager connMgr;
     String TAG="TLS13 SHConnectionClient";
     SHConnectionService service;
-
+    public HttpRequestExecutor httpRequestExecutor;
+    public CloseableHttpClient httpClient;
     public SHConnectionClient(SHConnectionService service)
     {
         this.service=service;
@@ -51,6 +61,21 @@ public class SHConnectionClient {
                )
                 .build();
         connMgr = new PoolingHttpClientConnectionManager(registry);
+        httpRequestExecutor=new HttpRequestExecutor(new ConnectionReuseStrategy() {
+            @Override
+            public boolean keepAlive(HttpRequest request, HttpResponse response, HttpContext context) {
+                return true;
+            }
+        });
+        httpClient= HttpClientBuilder.create()
+                .setConnectionManager(connMgr)
+//                .setDefaultCredentialsProvider(provider)
+                .setRequestExecutor(httpRequestExecutor)
+                .setDefaultRequestConfig(RequestConfig.custom()
+                        .setConnectionRequestTimeout(Timeout.ofSeconds(3))
+                        .setConnectTimeout(Timeout.ofSeconds(3))
+                        .build())
+                .build();
     }
 
 }

@@ -5,8 +5,11 @@ import android.content.Intent;
 import android.os.Binder;
 import android.os.IBinder;
 
+import org.apache.hc.client5.http.HttpRoute;
 import org.apache.hc.client5.http.io.ConnectionEndpoint;
 import org.apache.hc.client5.http.io.LeaseRequest;
+import org.apache.hc.core5.http.HttpHost;
+import org.apache.hc.core5.http.impl.io.HttpRequestExecutor;
 import org.apache.hc.core5.http.protocol.BasicHttpContext;
 
 import java.util.concurrent.ExecutorService;
@@ -22,11 +25,14 @@ public class SHConnectionService extends Service {
     SHConnectionClient shConnectionClient;
     public MainActivity main;
     String hostname;
+    String username, password;
     int port;
     int cmd;
     private final IBinder binder = new SHConnectionService.SHConnectionIBinder();
     int id;
-
+    HttpHost httpHost;
+    HttpRoute httpRoute;
+    String token;
 
     public void connect(String hostname, int port) {
         this.hostname=hostname;
@@ -44,6 +50,14 @@ public class SHConnectionService extends Service {
         shConnection=new SHConnection(this);
         pool.execute(shConnection);
     }
+    public void login(String username, String password) {
+        this.username=username;
+        this.password=password;
+        shConnection=new SHConnection(this);
+        cmd=SHConnection.CMD_LOGIN;
+        pool.execute(shConnection);
+    }
+
 
     public SHConnectionService() {
         pool = Executors.newCachedThreadPool();

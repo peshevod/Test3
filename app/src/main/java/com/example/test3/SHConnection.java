@@ -1,17 +1,35 @@
 package com.example.test3;
 
+import android.util.Base64;
+import android.util.JsonReader;
 import android.util.Log;
 
+import com.example.test3.data.model.LoggedInUser;
+import com.example.test3.ui.login.LoginResult;
+
 import org.apache.hc.client5.http.HttpRoute;
+import org.apache.hc.client5.http.auth.AuthScope;
+import org.apache.hc.client5.http.auth.UsernamePasswordCredentials;
+import org.apache.hc.client5.http.config.RequestConfig;
+import org.apache.hc.client5.http.impl.auth.BasicCredentialsProvider;
+import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
+import org.apache.hc.client5.http.impl.classic.CloseableHttpResponse;
+import org.apache.hc.client5.http.impl.classic.HttpClientBuilder;
 import org.apache.hc.client5.http.io.ConnectionEndpoint;
 import org.apache.hc.client5.http.io.LeaseRequest;
+import org.apache.hc.core5.http.HttpHeaders;
 import org.apache.hc.core5.http.HttpHost;
+import org.apache.hc.core5.http.Method;
+import org.apache.hc.core5.http.message.BasicClassicHttpRequest;
 import org.apache.hc.core5.http.protocol.BasicHttpContext;
 import org.apache.hc.core5.http.protocol.HttpContext;
 import org.apache.hc.core5.util.TimeValue;
 import org.apache.hc.core5.util.Timeout;
 
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;
 
@@ -28,39 +46,90 @@ public class SHConnection implements Runnable
         this.service=service;
     }
 
+    public void login()
+    {
+        try {
+            BasicClassicHttpRequest request1=new BasicClassicHttpRequest(Method.GET, service.httpHost,"/login");
+            String auth = service.username + ":" + service.password;
+            byte[] encodedAuth = Base64.encode(auth.getBytes(StandardCharsets.UTF_8),Base64.DEFAULT);
+//                        auth.getBytes(StandardCharsets.ISO_8859_1));
+            String authHeader = "Basic " + new String(encodedAuth);
+            request1.setHeader(HttpHeaders.AUTHORIZATION, authHeader);
+            CloseableHttpResponse response1= service.shConnectionClient.httpClient.execute(service.httpHost,request1, service.basicHttpContext);
+            int code=response1.getCode();
+            Log.i(TAG,response1.getReasonPhrase()+" "+code);
+            if(code==200)
+            {
+                String welcome="";
+                JsonReader reader = new JsonReader(new InputStreamReader(response1.getEntity().getContent(), "UTF-8"));
+                try {
+                    reader.beginObject();
+                    while (reader.hasNext()) {
+                        String name = reader.nextName();
+                        if(name.equalsIgnoreCase("token")) service.token=reader.nextString();
+                        else if(name.equalsIgnoreCase("welcome")) welcome= reader.nextString();
+                        else reader.skipValue();
+                    }
+                    reader.endObject();
+                } catch (IOException e) {
+                    Log.e(TAG, e.getMessage());
+                }
+                LoggedInUser loggedInUser=new LoggedInUser(service.username,service.password,service.httpHost.getHostName(),"007",welcome);
+                service.main.loginViewModel.getLoginRepository().setLoggedInUser(loggedInUser);
+                service.main.login_state=MainActivity.LOGGED_IN;
+                service.main.loginViewModel.getLoginResult().postValue(new LoginResult(loggedInUser));
+                Log.i(TAG,"user 007 "+welcome);
+            }
+        } catch (IOException e) {
+            service.main.loginViewModel.getLoginResult().postValue(new LoginResult(new Integer(e.hashCode())));
+            Log.i(TAG,e.getMessage());
+        }
+    }
+
     @Override
     public void run() {
         Log.i(TAG,"Thread id="+Thread.currentThread().getId());
         
         switch (service.cmd) {
             case CMD_CONNECT:
-                HttpHost httpHost=new HttpHost("https",service.hostname,service.port);
-                HttpRoute httpRoute=new HttpRoute(httpHost);
+                service.httpHost=new HttpHost("https",service.hostname,service.port);
+                service.httpRoute=new HttpRoute(service.httpHost);
+                if(service.connectionEndpoint!=null && service.connectionEndpoint.isConnected())
+                {
+                    Log.i(TAG, "Already connected");
+                    service.main.connected=true;
+                    break;
+                }
                 service.id++;
-                service.leaseRequest=service.shConnectionClient.connMgr.lease(String.valueOf(service.id), httpRoute,null);
+                service.leaseRequest=service.shConnectionClient.connMgr.lease(String.valueOf(service.id), service.httpRoute,null);
                 if(service.leaseRequest!=null) {
                     try {
                         service.connectionEndpoint = service.leaseRequest.get(Timeout.ofSeconds(1));
                         service.shConnectionClient.connMgr.connect(service.connectionEndpoint, TimeValue.ofSeconds(5), service.basicHttpContext);
-//                        service.shConnectionClient.connMgr.upgrade(service.connectionEndpoint, new BasicHttpContext());
                         service.main.connected=true;
                     } catch (InterruptedException | ExecutionException | TimeoutException | IOException e) {
                         Log.e(TAG, e.getMessage());
                         service.main.connected = false;
                     }
                 }
-                else service.main.connected = false;
+                else
+                {
+                    Log.i(TAG,"leaseRequest=null");
+                    service.main.connected = false;
+                }
                 break;
             case CMD_DISCONNECT:
                 service.shConnectionClient.connMgr.release(service.connectionEndpoint, null, TimeValue.ofSeconds(5));
                 service.main.connected = false;
+                break;
+            case CMD_LOGIN:
+                login();
                 break;
         }
         if(service.main.connected)
         {
             service.main.login_state=MainActivity.BASIC_LOGIN_REQUIRED;
             Log.i(TAG,"Connected!");
-//        serviceconnMgr.release(main.conn,null,TimeValue.ofHours(1));
         }
         else Log.e(TAG, "Not connected");
         service.main.homeViewModel.postConnected(service.main.connected);

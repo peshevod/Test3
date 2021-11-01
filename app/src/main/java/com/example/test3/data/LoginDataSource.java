@@ -17,7 +17,7 @@ public class LoginDataSource {
 
     Log.i("TLS13","Datasource login");
         try {
-            main.login(username,password);
+            main.shConnectionService.login(username,password);
             /*            LoggedInUser fakeUser =
                     new LoggedInUser(
                             java.util.UUID.randomUUID().toString(),
