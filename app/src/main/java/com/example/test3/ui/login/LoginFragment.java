@@ -6,6 +6,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.StringRes;
 import androidx.fragment.app.Fragment;
+import androidx.navigation.Navigation;
 import androidx.preference.PreferenceManager;
 
 import android.content.Context;
@@ -31,6 +32,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.test3.MainActivity;
+import com.example.test3.MyItemRecyclerViewAdapter;
 import com.example.test3.data.model.LoggedInUser;
 import com.example.test3.databinding.FragmentLoginBinding;
 
@@ -69,6 +71,7 @@ public class LoginFragment extends Fragment {
     CheckBox remember;
     EditText usernameEditText;
     EditText passwordEditText;
+    private String TAG="TLS13 LoginFragment";
 
     @Nullable
     @Override
@@ -147,6 +150,19 @@ public class LoginFragment extends Fragment {
                 }
                 if (loginResult.getSuccess() != null) {
                     updateUiWithUser(loginResult.getSuccess());
+                    main.shConnectionService.getDivices();
+                    main.shConnectionService.requestCompleted.observe(getViewLifecycleOwner(), new Observer<Boolean>() {
+                        @Override
+                        public void onChanged(@Nullable Boolean b) {
+                            if(b)
+                            {
+                                Log.i(TAG,"Request completed");
+                                Log.i(TAG,"Navigate to Devices");
+                                Navigation.findNavController(main, R.id.nav_host_fragment_content_main).navigate(R.id.action_login_fragment_to_devicesFragment);
+                                main.shConnectionService.requestCompleted.removeObserver();
+                            } else Log.i(TAG,"Request started");
+                        }
+                    });
                 }
             }
         });

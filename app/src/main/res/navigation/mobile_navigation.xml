@@ -40,7 +40,11 @@
         android:id="@+id/login_fragment"
         android:name="com.example.test3.ui.login.LoginFragment"
         android:label="fragment_login"
-        tools:layout="@layout/fragment_login" />
+        tools:layout="@layout/fragment_login" >
+        <action
+            android:id="@+id/action_login_fragment_to_devicesFragment"
+            app:destination="@id/devicesFragment" />
+    </fragment>
     <fragment
         android:id="@+id/new_settings_fragment"
         android:name="com.example.test3.NewSettingsFragment"
@@ -74,4 +78,9 @@
             android:name="server_name"
             app:argType="string" />
     </fragment>
+    <fragment
+        android:id="@+id/devicesFragment"
+        android:name="com.example.test3.DevicesFragment"
+        android:label="fragment_devices_list"
+        tools:layout="@layout/fragment_devices_list" />
 </navigation>

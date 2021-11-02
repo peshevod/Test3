@@ -19,8 +19,11 @@ import org.apache.hc.core5.http.HttpResponse;
 import org.apache.hc.core5.http.config.Registry;
 import org.apache.hc.core5.http.config.RegistryBuilder;
 import org.apache.hc.core5.http.impl.io.HttpRequestExecutor;
+import org.apache.hc.core5.http.message.BasicClassicHttpRequest;
 import org.apache.hc.core5.http.protocol.HttpContext;
 import org.apache.hc.core5.http.ssl.TLS;
+import org.apache.hc.core5.pool.PoolReusePolicy;
+import org.apache.hc.core5.util.TimeValue;
 import org.apache.hc.core5.util.Timeout;
 
 import java.security.KeyManagementException;
@@ -35,6 +38,7 @@ public class SHConnectionClient {
     public PoolingHttpClientConnectionManager connMgr;
     String TAG="TLS13 SHConnectionClient";
     SHConnectionService service;
+    Registry<ConnectionSocketFactory> registry;
     public HttpRequestExecutor httpRequestExecutor;
     public CloseableHttpClient httpClient;
     public SHConnectionClient(SHConnectionService service)
@@ -47,9 +51,15 @@ public class SHConnectionClient {
          } catch (KeyManagementException | NoSuchAlgorithmException e) {
             Log.e(TAG, e.getMessage());
         }
+        SSLConnectionSocketFactory sslf=SSLConnectionSocketFactoryBuilder
+                .create()
+                .setCiphers("TLS_AES_128_GCM_SHA256")
+                .setHostnameVerifier(new DefaultHostnameVerifier(null))
+                .setTlsVersions(TLS.V_1_3)
+                .build();
         Log.i(TAG, " MySSLSocketFactory successfully created");
         //        DefaultHostnameVerifier hostnameVerifier = new DefaultHostnameVerifier(null);
-        Registry<ConnectionSocketFactory> registry = RegistryBuilder.<ConnectionSocketFactory>create()
+        registry = RegistryBuilder.<ConnectionSocketFactory>create()
                 .register("http", PlainConnectionSocketFactory.getSocketFactory())
                 .register("https",SSLConnectionSocketFactoryBuilder
                         .create()
@@ -60,17 +70,37 @@ public class SHConnectionClient {
                         .build()
                )
                 .build();
-        connMgr = new PoolingHttpClientConnectionManager(registry);
+//        connMgr = new PoolingHttpClientConnectionManager(registry);
+        connMgr=PoolingHttpClientConnectionManagerBuilder
+                .create()
+                .setSSLSocketFactory(SSLConnectionSocketFactoryBuilder
+                        .create()
+                        .setCiphers("TLS_AES_128_GCM_SHA256")
+                        .setHostnameVerifier(new DefaultHostnameVerifier(null))
+                        .setTlsVersions(TLS.V_1_3)
+                        .build())
+                .setConnPoolPolicy(PoolReusePolicy.FIFO)
+                .setMaxConnPerRoute(2)
+                .setConnectionTimeToLive(TimeValue.ofSeconds(5))
+                .build();
         httpRequestExecutor=new HttpRequestExecutor(new ConnectionReuseStrategy() {
             @Override
             public boolean keepAlive(HttpRequest request, HttpResponse response, HttpContext context) {
+                Log.i(TAG,"Query to reuse");
                 return true;
             }
         });
         httpClient= HttpClientBuilder.create()
                 .setConnectionManager(connMgr)
 //                .setDefaultCredentialsProvider(provider)
-                .setRequestExecutor(httpRequestExecutor)
+//                .setRequestExecutor(httpRequestExecutor)
+                .setConnectionReuseStrategy(new ConnectionReuseStrategy() {
+                    @Override
+                    public boolean keepAlive(HttpRequest request, HttpResponse response, HttpContext context) {
+                        Log.i(TAG,"Query to reuse");
+                        return true;
+                    }
+                })
                 .setDefaultRequestConfig(RequestConfig.custom()
                         .setConnectionRequestTimeout(Timeout.ofSeconds(3))
                         .setConnectTimeout(Timeout.ofSeconds(3))

@@ -191,7 +191,6 @@ public class HomeFragment extends Fragment {
                     Log.i("TLS13","Navigate to login");
                     Navigation.findNavController(main, R.id.nav_host_fragment_content_main).navigate(R.id.action_nav_home_to_login_fragment);
                 }
-
 //                btn.refreshDrawableState();
             }
         });
