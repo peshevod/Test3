@@ -18,6 +18,7 @@ import org.apache.hc.client5.http.impl.classic.HttpClientBuilder;
 import org.apache.hc.client5.http.impl.io.PoolingHttpClientConnectionManager;
 import org.apache.hc.client5.http.io.ConnectionEndpoint;
 import org.apache.hc.client5.http.io.LeaseRequest;
+import org.apache.hc.core5.http.ClassicHttpRequest;
 import org.apache.hc.core5.http.ConnectionReuseStrategy;
 import org.apache.hc.core5.http.Header;
 import org.apache.hc.core5.http.HttpHeaders;
@@ -26,6 +27,7 @@ import org.apache.hc.core5.http.HttpRequest;
 import org.apache.hc.core5.http.HttpResponse;
 import org.apache.hc.core5.http.Method;
 import org.apache.hc.core5.http.impl.io.HttpRequestExecutor;
+import org.apache.hc.core5.http.io.support.ClassicRequestBuilder;
 import org.apache.hc.core5.http.message.BasicClassicHttpRequest;
 import org.apache.hc.core5.http.message.BasicHeader;
 import org.apache.hc.core5.http.protocol.BasicHttpContext;
@@ -95,7 +97,7 @@ public class SHConnection implements Runnable
             service.main.loginViewModel.getLoginResult().postValue(new LoginResult(new Integer(e.hashCode())));
             Log.i(TAG,e.getMessage());
         }
-        service.requestCompleted.postValue(true);
+//        service.requestCompleted.postValue(true);
     }
 
     public void getDevices()
@@ -145,6 +147,7 @@ public class SHConnection implements Runnable
         {
             Log.e(TAG, e.getMessage());
         }
+        service.requestCompleted.postValue(true);
     }
 
     @Override

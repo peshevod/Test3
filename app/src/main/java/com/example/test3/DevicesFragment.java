@@ -25,11 +25,10 @@ import java.util.List;
  */
 public class DevicesFragment extends Fragment {
     MainActivity main;
-    RecyclerView recyclerView;
     // TODO: Customize parameter argument names
     private static final String ARG_COLUMN_COUNT = "column-count";
     // TODO: Customize parameters
-    private int mColumnCount = 2;
+    private int mColumnCount = 1;
     List<MyDevice> devices=null;
     private final static String TAG="TLS13 DevicesFragment";
     /**
@@ -65,7 +64,7 @@ public class DevicesFragment extends Fragment {
         // Set the adapter
         if (view instanceof RecyclerView) {
             Context context = view.getContext();
-            recyclerView = (RecyclerView) view;
+            RecyclerView recyclerView = (RecyclerView) view;
             if (mColumnCount <= 1) {
                 recyclerView.setLayoutManager(new LinearLayoutManager(context));
             } else {

@@ -2,6 +2,7 @@ package com.example.test3;
 
 import androidx.recyclerview.widget.RecyclerView;
 
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -35,7 +36,8 @@ public class MyItemRecyclerViewAdapter extends RecyclerView.Adapter<MyItemRecycl
     public void onBindViewHolder(final ViewHolder holder, int position) {
         holder.mItem = mValues.get(position);
         holder.mIdView.setText(mValues.get(position).devName);
-        holder.mContentView.setText(mValues.get(position).devEui);
+        holder.mContentView.setText(mValues.get(position).devEui+" 1."+mValues.get(position).version);
+        Log.i("TLS13 MyItemRecView", "position="+position+" id="+holder.mIdView.getText()+" content="+holder.mContentView.getText());
     }
 
     @Override

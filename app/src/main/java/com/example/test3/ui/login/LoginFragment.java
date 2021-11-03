@@ -151,7 +151,7 @@ public class LoginFragment extends Fragment {
                 if (loginResult.getSuccess() != null) {
                     updateUiWithUser(loginResult.getSuccess());
                     main.shConnectionService.getDivices();
-                    main.shConnectionService.requestCompleted.observe(getViewLifecycleOwner(), new Observer<Boolean>() {
+                    main.shConnectionService.requestCompleted.observeForever(new Observer<Boolean>() {
                         @Override
                         public void onChanged(@Nullable Boolean b) {
                             if(b)
@@ -159,7 +159,7 @@ public class LoginFragment extends Fragment {
                                 Log.i(TAG,"Request completed");
                                 Log.i(TAG,"Navigate to Devices");
                                 Navigation.findNavController(main, R.id.nav_host_fragment_content_main).navigate(R.id.action_login_fragment_to_devicesFragment);
-                                main.shConnectionService.requestCompleted.removeObserver();
+                                main.shConnectionService.requestCompleted.removeObserver(this);
                             } else Log.i(TAG,"Request started");
                         }
                     });

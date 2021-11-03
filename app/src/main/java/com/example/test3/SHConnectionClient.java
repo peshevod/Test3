@@ -79,9 +79,9 @@ public class SHConnectionClient {
                         .setHostnameVerifier(new DefaultHostnameVerifier(null))
                         .setTlsVersions(TLS.V_1_3)
                         .build())
-                .setConnPoolPolicy(PoolReusePolicy.FIFO)
-                .setMaxConnPerRoute(2)
-                .setConnectionTimeToLive(TimeValue.ofSeconds(5))
+//                .setConnPoolPolicy(PoolReusePolicy.FIFO)
+//                .setMaxConnPerRoute(2)
+//                .setConnectionTimeToLive(TimeValue.ofSeconds(5))
                 .build();
         httpRequestExecutor=new HttpRequestExecutor(new ConnectionReuseStrategy() {
             @Override
