@@ -158,8 +158,8 @@ public class SHConnection implements Runnable
         
         switch (service.cmd) {
             case CMD_CONNECT:
-                service.httpHost= RoutingSupport.normalize(new HttpHost("https",service.hostname,service.port),new DefaultSchemePortResolver());
-                service.httpRoute=new HttpRoute(service.httpHost);
+                service.httpHost= new HttpHost("https",service.hostname,service.port);
+                service.httpRoute= new HttpRoute(RoutingSupport.normalize(service.httpHost, DefaultSchemePortResolver.INSTANCE));
                 if(service.connectionEndpoint!=null && service.connectionEndpoint.isConnected())
                 {
                     Log.i(TAG, "Already connected");

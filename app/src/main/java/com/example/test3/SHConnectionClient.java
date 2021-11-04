@@ -81,7 +81,7 @@ public class SHConnectionClient {
                         .build())
 //                .setConnPoolPolicy(PoolReusePolicy.FIFO)
 //                .setMaxConnPerRoute(2)
-//                .setConnectionTimeToLive(TimeValue.ofSeconds(5))
+                .setConnectionTimeToLive(TimeValue.ofSeconds(30))
                 .build();
         httpRequestExecutor=new HttpRequestExecutor(new ConnectionReuseStrategy() {
             @Override
