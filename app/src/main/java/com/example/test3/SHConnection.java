@@ -11,6 +11,7 @@ import org.apache.hc.client5.http.HttpRoute;
 import org.apache.hc.client5.http.auth.AuthScope;
 import org.apache.hc.client5.http.auth.UsernamePasswordCredentials;
 import org.apache.hc.client5.http.config.RequestConfig;
+import org.apache.hc.client5.http.impl.DefaultSchemePortResolver;
 import org.apache.hc.client5.http.impl.auth.BasicCredentialsProvider;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpResponse;
@@ -18,6 +19,7 @@ import org.apache.hc.client5.http.impl.classic.HttpClientBuilder;
 import org.apache.hc.client5.http.impl.io.PoolingHttpClientConnectionManager;
 import org.apache.hc.client5.http.io.ConnectionEndpoint;
 import org.apache.hc.client5.http.io.LeaseRequest;
+import org.apache.hc.client5.http.routing.RoutingSupport;
 import org.apache.hc.core5.http.ClassicHttpRequest;
 import org.apache.hc.core5.http.ConnectionReuseStrategy;
 import org.apache.hc.core5.http.Header;
@@ -156,7 +158,7 @@ public class SHConnection implements Runnable
         
         switch (service.cmd) {
             case CMD_CONNECT:
-                service.httpHost=new HttpHost("https",service.hostname,service.port);
+                service.httpHost= RoutingSupport.normalize(new HttpHost("https",service.hostname,service.port),new DefaultSchemePortResolver());
                 service.httpRoute=new HttpRoute(service.httpHost);
                 if(service.connectionEndpoint!=null && service.connectionEndpoint.isConnected())
                 {
@@ -181,10 +183,10 @@ public class SHConnection implements Runnable
                     Log.i(TAG,"leaseRequest=null");
                     service.main.connected = false;
                 }
-                service.shConnectionClient.connMgr.release(service.connectionEndpoint, null, TimeValue.ofSeconds(1));
+                service.shConnectionClient.connMgr.release(service.connectionEndpoint, null, TimeValue.NEG_ONE_MILLISECOND);
                 break;
             case CMD_DISCONNECT:
-                service.shConnectionClient.connMgr.release(service.connectionEndpoint, null, TimeValue.ofSeconds(5));
+                service.shConnectionClient.connMgr.release(service.connectionEndpoint, null, TimeValue.ofSeconds(0));
                 service.main.connected = false;
                 break;
             case CMD_LOGIN:
