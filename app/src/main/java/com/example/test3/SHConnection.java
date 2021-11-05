@@ -159,7 +159,7 @@ public class SHConnection implements Runnable
         switch (service.cmd) {
             case CMD_CONNECT:
                 service.httpHost= new HttpHost("https",service.hostname,service.port);
-                service.httpRoute= new HttpRoute(RoutingSupport.normalize(service.httpHost, DefaultSchemePortResolver.INSTANCE));
+                service.httpRoute= new HttpRoute(RoutingSupport.normalize(service.httpHost, DefaultSchemePortResolver.INSTANCE),null,true);
                 if(service.connectionEndpoint!=null && service.connectionEndpoint.isConnected())
                 {
                     Log.i(TAG, "Already connected");
@@ -183,9 +183,10 @@ public class SHConnection implements Runnable
                     Log.i(TAG,"leaseRequest=null");
                     service.main.connected = false;
                 }
-                service.shConnectionClient.connMgr.release(service.connectionEndpoint, null, TimeValue.NEG_ONE_MILLISECOND);
+                service.shConnectionClient.connMgr.release(service.connectionEndpoint, null, TimeValue.ofSeconds(900));
                 break;
             case CMD_DISCONNECT:
+                service.connectionEndpoint.close(CloseMode.GRACEFUL);
                 service.shConnectionClient.connMgr.release(service.connectionEndpoint, null, TimeValue.ofSeconds(0));
                 service.main.connected = false;
                 break;
