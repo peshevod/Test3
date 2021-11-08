@@ -38,6 +38,7 @@ public class SHConnectionService extends Service {
     HttpRoute httpRoute;
     String token;
     List<MyDevice> devices;
+
     public MutableLiveData<Boolean> requestCompleted = new MutableLiveData<>();
 
     public void connect(String hostname, int port) {

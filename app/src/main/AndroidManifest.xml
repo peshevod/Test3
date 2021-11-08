@@ -17,10 +17,6 @@
             android:name=".SHConnectionService"
             android:enabled="true"
             android:exported="false"></service>
-        <service
-            android:name=".MyAsyncConnectionService"
-            android:enabled="true"
-            android:exported="false" />
 
         <activity
             android:name=".MainActivity"

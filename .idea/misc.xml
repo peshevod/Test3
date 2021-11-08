@@ -22,6 +22,7 @@
         <entry key="app/src/main/res/drawable/ic_menu_camera.xml" value="0.19375" />
         <entry key="app/src/main/res/drawable/ic_menu_gallery.xml" value="0.19375" />
         <entry key="app/src/main/res/drawable/side_nav_bar.xml" value="0.19375" />
+        <entry key="app/src/main/res/layout/chip_layout.xml" value="0.33" />
         <entry key="app/src/main/res/layout/fragment_devices.xml" value="0.23731884057971014" />
         <entry key="app/src/main/res/layout/fragment_devices_list.xml" value="0.23731884057971014" />
         <entry key="app/src/main/res/layout/fragment_gallery.xml" value="0.17760416666666667" />
@@ -31,6 +32,7 @@
         <entry key="app/src/main/res/layout/fragment_slideshow.xml" value="0.17760416666666667" />
         <entry key="app/src/main/res/layout/nav_header_main.xml" value="0.17760416666666667" />
         <entry key="app/src/main/res/menu/activity_main_drawer.xml" value="0.17760416666666667" />
+        <entry key="app/src/main/res/raw/trusted_roots/drawable-anydpi/alarm_on_icon.xml" value="0.2890625" />
         <entry key="app/src/main/res/raw/trusted_roots/drawable-anydpi/ic_menu_login.xml" value="0.19375" />
         <entry key="app/src/main/res/xml/network_security_config.xml" value="0.196875" />
       </map>

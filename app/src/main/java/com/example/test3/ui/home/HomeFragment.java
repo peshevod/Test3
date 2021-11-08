@@ -1,6 +1,5 @@
 package com.example.test3.ui.home;
 
-import android.content.Context;
 import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.os.Bundle;
@@ -17,19 +16,14 @@ import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
-import androidx.fragment.app.FragmentActivity;
-import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.navigation.Navigation;
 import androidx.preference.PreferenceManager;
 
 import com.example.test3.MainActivity;
-import com.example.test3.MyConnection;
 import com.example.test3.R;
-import com.example.test3.TLS13;
 import com.example.test3.databinding.FragmentHomeBinding;
 
 public class HomeFragment extends Fragment {

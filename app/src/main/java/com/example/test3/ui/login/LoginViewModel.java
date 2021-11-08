@@ -7,10 +7,7 @@ import androidx.lifecycle.ViewModel;
 import android.util.Patterns;
 
 import com.example.test3.MainActivity;
-import com.example.test3.TLS13;
 import com.example.test3.data.LoginRepository;
-import com.example.test3.data.Result;
-import com.example.test3.data.model.LoggedInUser;
 import com.example.test3.R;
 
 public class LoginViewModel extends ViewModel {

@@ -77,22 +77,17 @@ import javax.net.ssl.SSLContext;
 
 public class MainActivity extends AppCompatActivity implements PreferenceFragmentCompat.OnPreferenceStartFragmentCallback{
 
-    public MyAsyncConnectionService myAsyncConnectionService;
     public SHConnectionService shConnectionService;
     boolean mBound = false;
-    boolean mAsyncBound = false;
     private AppBarConfiguration mAppBarConfiguration;
     private ActivityMainBinding binding;
     private NavHeaderMainBinding navbind;
-//    public MutableLiveData<Boolean> connected = new MutableLiveData<>();
     public boolean connected;
     SharedPreferences sharedPreferences;
     private ProgressBar spinner;
     public SSLContext ctx=null;
     public MainActivity main;
-    public MySSLSocketFactory factory=null;
-    public TLS13 tls;
-    final String TAG="TLS13";
+     final String TAG="TLS13";
     public HomeViewModel homeViewModel;
     public LoginViewModel loginViewModel;
     public final static int NOT_CONNECTED=0;
@@ -101,14 +96,7 @@ public class MainActivity extends AppCompatActivity implements PreferenceFragmen
     public final static int LOGGED_IN=3;
 
     public int login_state=NOT_CONNECTED;
-    public PoolingHttpClientConnectionManager connMgr=null;
-    public ConnectionEndpoint conn;
-    public BasicHttpContext basicHttpContext;
     ExecutorService pool;
-    public HttpHost host;
-    public HttpClientContext context;
-    public HttpRequestExecutor httpRequestExecutor;
-    public MyAsyncConnection asyncConnection;
 
     public MainActivity()
     {
@@ -116,75 +104,10 @@ public class MainActivity extends AppCompatActivity implements PreferenceFragmen
         main=this;
     }
 
-    void createConnectionManager()
-    {
-        try {
-            ctx = SSLContext.getInstance("TLSv1.3");
-            ctx.init(null, null, null);
-        } catch (KeyManagementException | NoSuchAlgorithmException e) {
-            Log.e(TAG, e.getMessage());
-        }
-        Log.i(TAG, " MySSLSocketFactory successfully created");
-//        DefaultHostnameVerifier hostnameVerifier = new DefaultHostnameVerifier(null);
-        SSLConnectionSocketFactory f = new SSLConnectionSocketFactory(
-                ctx,
-                new String[]{"TLSv1.3"},
-                new String[]{"TLS_AES_128_GCM_SHA256"},
-                new DefaultHostnameVerifier(null));
-        Registry<ConnectionSocketFactory> registry = RegistryBuilder.<ConnectionSocketFactory>create()
-                .register("http", PlainConnectionSocketFactory.getSocketFactory())
-                .register("https", f)
-                .build();
-        connMgr=new PoolingHttpClientConnectionManager(registry);
-
-/*        connMgr.setSocketConfig(SocketConfig.custom()
-                .setSoTimeout(5000,TimeUnit.MILLISECONDS)
-                .build());*/
-//        BasicHttpContext basicHttpContext=new BasicHttpContext();
-//        context=new HttpClientContext();
-        basicHttpContext=new BasicHttpContext();
-        pool= Executors.newCachedThreadPool();
-        httpRequestExecutor=new HttpRequestExecutor(new ConnectionReuseStrategy() {
-            @Override
-            public boolean keepAlive(HttpRequest request, HttpResponse response, HttpContext context) {
-                return true;
-            }
-        });
-        main.login_state=MainActivity.CONNECT_REQUIRED;
-/*        connMgr = PoolingHttpClientConnectionManagerBuilder.create()
-                .setConnectionTimeToLive(TimeValue.ofMinutes(1))
-                .setSSLSocketFactory(f)
-                .setDefaultSocketConfig(SocketConfig.custom()
-                        .setSoTimeout(5000,TimeUnit.MILLISECONDS)
-                        .build())
-                .build();*/
-    }
-
-    public void connect(String hostname,int port)
-    {
-        pool.execute(new MyConnection( this, hostname, port));
-    }
-
-    public void asyncConnect(String hostname,int port)
-    {
-        (new MyConnection( this, hostname, port)).run();
-    }
-
-    public void disconnect()
-    {
-        pool.execute(new MyConnection(this));
-    }
-
-    public void login(String username, String password)
-    {
-        pool.execute(new MyConnection(this, username, password));
-    }
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        System.setProperty("java.net.preferIPv4Stack" , "true");
         binding = ActivityMainBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
         connected=false;
@@ -198,14 +121,10 @@ public class MainActivity extends AppCompatActivity implements PreferenceFragmen
         });
         SharedPreferences sharedPreferences =
                 PreferenceManager.getDefaultSharedPreferences(this /* Activity context */);
-//        Button btn=findViewById(R.id.button);
-//        spinner = (ProgressBar)findViewById(R.id.progressBar1);
-//        spinner.setVisibility(View.GONE);
 
         DrawerLayout drawer = binding.drawerLayout;
         NavigationView navigationView = binding.navView;
-        // Passing each menu ID as a set of Ids because each
-        // menu should be considered as top level destinations.
+
         mAppBarConfiguration = new AppBarConfiguration.Builder(
                 R.id.nav_home, R.id.nav_gallery, R.id.nav_slideshow)
                 .setDrawerLayout(drawer)
@@ -225,12 +144,6 @@ public class MainActivity extends AppCompatActivity implements PreferenceFragmen
                     }
                 });
 
-//      createConnectionManager();
-//      asyncConnection=new MyAsyncConnection(this);
-//        TLS13 tls=new TLS13(this, homeViewModel, sharedPreferences.getString("server_string", "mm304.asuscomm.com"), Integer.parseInt(sharedPreferences.getString("server_port", "51443")) );
-//        loginViewModel.setTLS(tls);
-//        Log.i("TLS13","TLS "+main.tls.toString());
-//        Log.i(TAG,tls.toString());
         NavController navController = Navigation.findNavController(this, R.id.nav_host_fragment_content_main);
         NavigationUI.setupActionBarWithNavController(this, navController, mAppBarConfiguration);
         NavigationUI.setupWithNavController(navigationView, navController);
@@ -265,20 +178,6 @@ public class MainActivity extends AppCompatActivity implements PreferenceFragmen
             editor.commit();
         }
 
-//        if(selectedServer.isEmpty()) navController.navigate(R.id.action_nav_home_to_newSettingsFragment);
-
-
-        /*        btn.setOnClickListener(
-                new View.OnClickListener(){
-                    @Override
-                    public void onClick(View v) {
-//                    spinner.setVisibility(View.VISIBLE);
-                    get
-                    TLS13 tls=new TLS13(main, sharedPreferences.getString("server_string", "mm304.asuscomm.com"), Integer.parseInt(sharedPreferences.getString("server_port", "51443")) );
-                    tls.execute();
-//                    spinner.setVisibility(View.GONE);
-                }
-        });*/
     }
 
     @Override
@@ -319,25 +218,6 @@ public class MainActivity extends AppCompatActivity implements PreferenceFragmen
         return super.onOptionsItemSelected(item);
     }
 
-    private ServiceConnection serviceAsyncConnection = new ServiceConnection() {
-
-        @Override
-        public void onServiceConnected(ComponentName className,
-                                       IBinder service) {
-            MyAsyncConnectionService.MyAsyncConnectionIBinder binder = (MyAsyncConnectionService.MyAsyncConnectionIBinder) service;
-            myAsyncConnectionService = binder.getService();
-            myAsyncConnectionService.main=MainActivity.this;
-            Log.i(TAG+ "Service Async Connection","Thread id="+Thread.currentThread().getId());
-            mAsyncBound = true;
-        }
-
-
-            @Override
-            public void onServiceDisconnected(ComponentName arg0) {
-            mAsyncBound = false;
-        }
-    };
-
     private ServiceConnection serviceConnection = new ServiceConnection() {
 
         @Override
@@ -369,7 +249,7 @@ public class MainActivity extends AppCompatActivity implements PreferenceFragmen
     @Override
     protected void onStop() {
         super.onStop();
-        unbindService(serviceAsyncConnection);
+        unbindService(serviceConnection);
         mBound = false;
     }
 
