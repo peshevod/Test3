@@ -32,8 +32,11 @@
         <entry key="app/src/main/res/layout/fragment_slideshow.xml" value="0.17760416666666667" />
         <entry key="app/src/main/res/layout/nav_header_main.xml" value="0.17760416666666667" />
         <entry key="app/src/main/res/menu/activity_main_drawer.xml" value="0.17760416666666667" />
+        <entry key="app/src/main/res/raw/trusted_roots/drawable-anydpi/10k.xml" value="0.2890625" />
+        <entry key="app/src/main/res/raw/trusted_roots/drawable-anydpi/Alert.xml" value="0.2890625" />
         <entry key="app/src/main/res/raw/trusted_roots/drawable-anydpi/alarm_on_icon.xml" value="0.2890625" />
         <entry key="app/src/main/res/raw/trusted_roots/drawable-anydpi/ic_menu_login.xml" value="0.19375" />
+        <entry key="app/src/main/res/raw/trusted_roots/drawable-anydpi/thermo.xml" value="0.37083333333333335" />
         <entry key="app/src/main/res/xml/network_security_config.xml" value="0.196875" />
       </map>
     </option>

@@ -43,6 +43,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
@@ -54,6 +55,7 @@ public class SHConnection implements Runnable
     public final static int CMD_CONNECT=1;
     public final static int CMD_LOGIN=2;
     public final static int CMD_DEVICES=3;
+    public final static int CMD_SESSIONS=4;
     String TAG="TLS13 SHConnection";
     SHConnectionService service;
 
@@ -152,6 +154,77 @@ public class SHConnection implements Runnable
         service.requestCompleted.postValue(true);
     }
 
+    public void getSessions()
+    {
+        service.sessions = new ArrayList<MySession>();
+        BasicClassicHttpRequest request1=new BasicClassicHttpRequest(Method.GET, service.httpHost,"/monitor/sessions");
+        request1.addHeader(new BasicHeader("Authorization", "Bearer "+service.token));
+        try(CloseableHttpResponse response1= service.shConnectionClient.httpClient.execute(service.httpHost,request1, service.basicHttpContext))
+        {
+            int code = response1.getCode();
+            Log.i(TAG, response1.getReasonPhrase() + " " + code);
+            if (code == 200)
+            {
+                MySession session=null;
+                Log.i(TAG, "Response=\n"+response1.getEntity().toString());
+                try(JsonReader reader = new JsonReader(new InputStreamReader(response1.getEntity().getContent(), "UTF-8")))
+                {
+                    reader.beginObject();
+                    while (reader.hasNext()) {
+                        String name0 = reader.nextName();
+                        Log.i(TAG,"Name="+name0);
+                        if(name0.equalsIgnoreCase("Sessions")) {
+                            reader.beginArray();
+                            while (reader.hasNext()) {
+                                reader.beginObject();
+                                while (reader.hasNext()) {
+                                    String name = reader.nextName();
+                                    if (name.equalsIgnoreCase("Device"))
+                                        session=new MySession(reader.nextString());
+                                    else if (name.equalsIgnoreCase("time"))
+                                        session.setTime(reader.nextLong());
+                                    else if (name.equalsIgnoreCase("devnonce"))
+                                        session.devnonce = reader.nextInt();
+                                    else if (name.equalsIgnoreCase("fcntup"))
+                                        session.fcntup = reader.nextLong();
+                                    else if (name.equalsIgnoreCase("temperature"))
+                                        session.temperature = reader.nextInt();
+                                    else if (name.equalsIgnoreCase("batlevel"))
+                                        session.batlevel = reader.nextInt();
+                                    else if (name.equalsIgnoreCase("rssi"))
+                                        session.rssi = reader.nextInt();
+                                    else if (name.equalsIgnoreCase("snr"))
+                                        session.snr = reader.nextInt();
+                                    else if (name.equalsIgnoreCase("local_rssi"))
+                                        session.local_rssi = reader.nextInt();
+                                    else if (name.equalsIgnoreCase("local_snr"))
+                                        session.local_snr = reader.nextInt();
+                                    else if (name.equalsIgnoreCase("power"))
+                                        session.power = reader.nextInt();
+                                    else if (name.equalsIgnoreCase("local_power"))
+                                        session.local_power = reader.nextInt();
+                                    else if (name.equalsIgnoreCase("values"))
+                                        session.values = reader.nextInt();
+                                    else reader.skipValue();
+                                }
+                                service.sessions.add(session);
+                                Log.i(TAG, "add session " + session.devName + " time=" + session.lastTime + " devnonce=" + session.devnonce);
+                                reader.endObject();
+                            }
+                            reader.endArray();
+                        }
+                        else reader.skipValue();
+                    }
+                    reader.endObject();
+                }
+            }
+        } catch (IOException e)
+        {
+            Log.e(TAG, e.getMessage());
+        }
+        service.requestCompleted.postValue(true);
+    }
+
     @Override
     public void run() {
         Log.i(TAG,"Thread id="+Thread.currentThread().getId());
@@ -192,6 +265,9 @@ public class SHConnection implements Runnable
                 break;
             case CMD_LOGIN:
                 login();
+                break;
+            case CMD_SESSIONS:
+                getSessions();
                 break;
             case CMD_DEVICES:
                 getDevices();

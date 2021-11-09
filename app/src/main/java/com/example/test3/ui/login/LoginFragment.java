@@ -150,7 +150,7 @@ public class LoginFragment extends Fragment {
                 }
                 if (loginResult.getSuccess() != null) {
                     updateUiWithUser(loginResult.getSuccess());
-                    main.shConnectionService.getDivices();
+                    main.shConnectionService.getSessions();
                     main.shConnectionService.requestCompleted.observeForever(new Observer<Boolean>() {
                         @Override
                         public void onChanged(@Nullable Boolean b) {

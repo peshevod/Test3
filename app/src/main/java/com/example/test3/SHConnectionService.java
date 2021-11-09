@@ -38,6 +38,7 @@ public class SHConnectionService extends Service {
     HttpRoute httpRoute;
     String token;
     List<MyDevice> devices;
+    List<MySession> sessions;
 
     public MutableLiveData<Boolean> requestCompleted = new MutableLiveData<>();
 
@@ -66,12 +67,20 @@ public class SHConnectionService extends Service {
         pool.execute(shConnection);
     }
 
-    public List<MyDevice> getDivices() {
+    public List<MyDevice> getDevices() {
         shConnection=new SHConnection(this);
         requestCompleted.postValue(false);
         cmd=SHConnection.CMD_DEVICES;
         pool.execute(shConnection);
         return devices;
+    }
+
+    public List<MySession> getSessions() {
+        shConnection=new SHConnection(this);
+        requestCompleted.postValue(false);
+        cmd=SHConnection.CMD_SESSIONS;
+        pool.execute(shConnection);
+        return sessions;
     }
 
 
