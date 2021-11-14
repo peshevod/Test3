@@ -1,6 +1,7 @@
 package com.example.test3;
 
 import androidx.annotation.ColorRes;
+import androidx.navigation.Navigation;
 import androidx.recyclerview.widget.RecyclerView;
 
 import android.content.Context;
@@ -22,14 +23,27 @@ import java.util.List;
  */
 public class MyItemRecyclerViewAdapter extends RecyclerView.Adapter<MyItemRecyclerViewAdapter.ViewHolder> {
 
-    public final List<MyDevice> mValues;
-    public final List<MySession> mSessions;
+    public static final int VIEW_MODE_SHORT=1;
+    public static final int VIEW_MODE_MEDIUM=2;
+    public static final int VIEW_MODE_LARGE=3;
+    public List<MySession> mSessions;
+    private int viewMode;
 
     Context ctx;
 
-    public MyItemRecyclerViewAdapter(List<MySession>  items, List<MyDevice> devs) {
+    public MyItemRecyclerViewAdapter(List<MySession>  items) {
         mSessions=items;
-        mValues=devs;
+        viewMode=MyItemRecyclerViewAdapter.VIEW_MODE_MEDIUM;
+    }
+
+    public void setItems(List<MySession>  items)
+    {
+        mSessions=items;
+    }
+
+    public void setViewMode(int viewMode)
+    {
+        this.viewMode=viewMode;
     }
 
     @Override
@@ -42,20 +56,19 @@ public class MyItemRecyclerViewAdapter extends RecyclerView.Adapter<MyItemRecycl
 
     @Override
     public void onBindViewHolder(final ViewHolder holder, int position) {
-        if(mValues!=null) holder.mItem = mValues.get(position);
         if(mSessions!=null) {
             holder.mSesItem = mSessions.get(position);
             holder.mIdView.setText(mSessions.get(position).devName);
-            holder.mContentView.setText(mSessions.get(position).getTime());
-            holder.mVersion.setText("Packet number " + mSessions.get(position).devnonce+"."+mSessions.get(position).fcntup);
-            holder.mtemp.setText(""+mSessions.get(position).temperature/10.0+" C");
-            holder.mbat.setText(""+mSessions.get(position).batlevel*100/7+"%");
-            holder.mrssi.setText("DEV RSSI "+mSessions.get(position).rssi+" dbm");
-            holder.msnr.setText("DEV SNR "+mSessions.get(position).snr);
-            holder.mlrssi.setText("GW RSSI "+mSessions.get(position).local_rssi+" dbm");
-            holder.mlsnr.setText("GW SNR "+mSessions.get(position).local_snr);
-            holder.mpower.setText("DEV Power "+mSessions.get(position).power+" dbm");
-            holder.mlpower.setText("GW Power "+mSessions.get(position).local_power+" dbm");
+            holder.mTime.setText(mSessions.get(position).getTime());
+            holder.mPacket.setText("Packet number " + mSessions.get(position).devnonce+"."+mSessions.get(position).fcntup);
+            holder.mTemp.setText(""+mSessions.get(position).temperature/10.0+" C");
+            holder.mBat.setText(""+mSessions.get(position).batlevel*100/7+"%");
+            holder.mRssi.setText("DEV RSSI "+mSessions.get(position).rssi+" dbm");
+            holder.mSnr.setText("DEV SNR "+mSessions.get(position).snr);
+            holder.mLrssi.setText("GW RSSI "+mSessions.get(position).local_rssi+" dbm");
+            holder.mLsnr.setText("GW SNR "+mSessions.get(position).local_snr);
+            holder.mPower.setText("DEV Power "+mSessions.get(position).power+" dbm");
+            holder.mLpower.setText("GW Power "+mSessions.get(position).local_power+" dbm");
             if((mSessions.get(position).values & 0x00000001) ==1)
             {
                 holder.mSensor1.setChipBackgroundColorResource(R.color.alert);
@@ -77,7 +90,7 @@ public class MyItemRecyclerViewAdapter extends RecyclerView.Adapter<MyItemRecycl
                 holder.mSensor2.setChipIconResource(R.drawable.good);
             }
         }
-        Log.i("TLS13 MyItemRecView", "position="+position+" id="+holder.mIdView.getText()+" content="+holder.mContentView.getText());
+        Log.i("TLS13 MyItemRecView", "position="+position+" id="+holder.mIdView.getText()+" content="+holder.mTime.getText());
     }
 
     @Override
@@ -90,59 +103,63 @@ public class MyItemRecyclerViewAdapter extends RecyclerView.Adapter<MyItemRecycl
         final ChipGroup mChipGroup;
         public final Chip mSensor1;
         public final Chip mSensor2;
-        public final Chip mContentView = new Chip(ctx);
-        public final Chip mtemp = new Chip(ctx);
-        public final Chip mbat = new Chip(ctx);
-        public final Chip mVersion = new Chip(ctx);
-        public final Chip mrssi = new Chip(ctx);
-        public final Chip msnr = new Chip(ctx);
-        public final Chip mlrssi = new Chip(ctx);
-        public final Chip mlsnr = new Chip(ctx);
-        public final Chip mpower= new Chip(ctx);
-        public final Chip mlpower = new Chip(ctx);
+        public final Chip mTime = new Chip(ctx);
+        public final Chip mTemp = new Chip(ctx);
+        public final Chip mBat = new Chip(ctx);
+        public final Chip mPacket = new Chip(ctx);
+        public final Chip mRssi = new Chip(ctx);
+        public final Chip mSnr = new Chip(ctx);
+        public final Chip mLrssi = new Chip(ctx);
+        public final Chip mLsnr = new Chip(ctx);
+        public final Chip mPower= new Chip(ctx);
+        public final Chip mLpower = new Chip(ctx);
         public MyDevice mItem;
         public MySession mSesItem;
 
         public ViewHolder(FragmentDevicesBinding binding) {
             super(binding.getRoot());
 //            mIdView = binding.itemNumber;
+
             mIdView=binding.tv;
             mSensor1=binding.chip4;
             mSensor2=binding.chip5;
             mChipGroup=binding.cg;
-            mContentView.setChipIconResource(R.drawable.clock);
-            mContentView.setChipBackgroundColorResource(R.color.teal_200);
-//            mVersion.setChipIconResource(R.drawable.n10k);
-            mVersion.setChipBackgroundColorResource(R.color.teal_700);
-            mtemp.setChipIconResource(R.drawable.thermo);
-            mtemp.setChipBackgroundColorResource(R.color.purple_700);
-            mtemp.setTextColor(0xFFFFFFFF);
-            mbat.setChipIconResource(R.drawable.bat);
-            mbat.setChipBackgroundColorResource(R.color.batlevel);
-            mrssi.setChipBackgroundColorResource(R.color.teal_200);
-            msnr.setChipBackgroundColorResource(R.color.teal_200);
-            mlrssi.setChipBackgroundColorResource(R.color.teal_200);
-            mlsnr.setChipBackgroundColorResource(R.color.teal_200);
-            mpower.setChipBackgroundColorResource(R.color.teal_200);
-            mlpower.setChipBackgroundColorResource(R.color.teal_200);
-            mChipGroup.addView(mContentView);
-            mChipGroup.addView(mtemp);
-            mChipGroup.addView(mbat);
-            mChipGroup.addView(mVersion);
-            mChipGroup.addView(mrssi);
-            mChipGroup.addView(msnr);
-            mChipGroup.addView(mlrssi);
-            mChipGroup.addView(mlsnr);
-            mChipGroup.addView(mpower);
-            mChipGroup.addView(mlpower);
+            mTime.setChipIconResource(R.drawable.clock);
+            mTime.setChipBackgroundColorResource(R.color.teal_200);
+            mPacket.setChipBackgroundColorResource(R.color.teal_700);
+            mTemp.setChipIconResource(R.drawable.thermo);
+            mTemp.setChipBackgroundColorResource(R.color.purple_700);
+            mTemp.setTextColor(0xFFFFFFFF);
+            mBat.setChipIconResource(R.drawable.bat);
+            mBat.setChipBackgroundColorResource(R.color.batlevel);
+            mRssi.setChipBackgroundColorResource(R.color.teal_200);
+            mSnr.setChipBackgroundColorResource(R.color.teal_200);
+            mLrssi.setChipBackgroundColorResource(R.color.teal_200);
+            mLsnr.setChipBackgroundColorResource(R.color.teal_200);
+            mPower.setChipBackgroundColorResource(R.color.teal_200);
+            mLpower.setChipBackgroundColorResource(R.color.teal_200);
+            if(viewMode!=MyItemRecyclerViewAdapter.VIEW_MODE_SHORT)
+            {
+                mChipGroup.addView(mTime);
+                mChipGroup.addView(mTemp);
+                mChipGroup.addView(mBat);
+            }
+            if(viewMode==MyItemRecyclerViewAdapter.VIEW_MODE_LARGE)
+            {
+                mChipGroup.addView(mPacket);
+                mChipGroup.addView(mRssi);
+                mChipGroup.addView(mSnr);
+                mChipGroup.addView(mLrssi);
+                mChipGroup.addView(mLsnr);
+                mChipGroup.addView(mPower);
+                mChipGroup.addView(mLpower);
+            }
 
-//            mIdView.setChipBackgroundColorResource(R.color.purple_200);
-//            mIdView.setChipIconResource(R.drawable.alarm_off_icon);
         }
 
         @Override
         public String toString() {
-            return super.toString() + " '" + mContentView.getText() + "'";
+            return super.toString() + " '" + mTime.getText() + "'";
         }
     }
 }

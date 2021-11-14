@@ -77,7 +77,7 @@ public class SHConnectionService extends Service {
 
     public List<MySession> getSessions() {
         shConnection=new SHConnection(this);
-        requestCompleted.postValue(false);
+        requestCompleted.setValue(false);
         cmd=SHConnection.CMD_SESSIONS;
         pool.execute(shConnection);
         return sessions;
