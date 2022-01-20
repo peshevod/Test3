@@ -23,12 +23,14 @@ import org.apache.hc.client5.http.routing.RoutingSupport;
 import org.apache.hc.core5.http.ClassicHttpRequest;
 import org.apache.hc.core5.http.ConnectionReuseStrategy;
 import org.apache.hc.core5.http.Header;
+import org.apache.hc.core5.http.HttpEntity;
 import org.apache.hc.core5.http.HttpHeaders;
 import org.apache.hc.core5.http.HttpHost;
 import org.apache.hc.core5.http.HttpRequest;
 import org.apache.hc.core5.http.HttpResponse;
 import org.apache.hc.core5.http.Method;
 import org.apache.hc.core5.http.impl.io.HttpRequestExecutor;
+import org.apache.hc.core5.http.io.entity.StringEntity;
 import org.apache.hc.core5.http.io.support.ClassicRequestBuilder;
 import org.apache.hc.core5.http.message.BasicClassicHttpRequest;
 import org.apache.hc.core5.http.message.BasicHeader;
@@ -101,7 +103,23 @@ public class SHConnection implements Runnable
             service.main.loginViewModel.getLoginResult().postValue(new LoginResult(new Integer(e.hashCode())));
             Log.i(TAG,e.getMessage());
         }
-//        service.requestCompleted.postValue(true);
+        postToken();
+    }
+
+    public void postToken()
+    {
+        BasicClassicHttpRequest request1=new BasicClassicHttpRequest(Method.POST, service.httpHost,"/monitor/token");
+        request1.addHeader(new BasicHeader("Authorization", "Bearer "+service.token));
+        request1.setEntity(new StringEntity(service.main.token));
+        try(CloseableHttpResponse response1= service.shConnectionClient.httpClient.execute(service.httpHost,request1, service.basicHttpContext))
+        {
+            int code = response1.getCode();
+            Log.i(TAG, response1.getReasonPhrase() + " " + code);
+            if (code == 200) Log.i(TAG,"Post Token Success");
+            else Log.e(TAG,"Post token Failure "+code+response1.getReasonPhrase());
+        } catch (IOException e) {
+            Log.e(TAG, e.getMessage());
+        }
     }
 
     public void getDevices()

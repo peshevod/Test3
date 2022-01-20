@@ -97,6 +97,7 @@ public class MainActivity extends AppCompatActivity implements PreferenceFragmen
 
     public int login_state=NOT_CONNECTED;
     ExecutorService pool;
+    public String token;
 
     public MainActivity()
     {
@@ -139,7 +140,7 @@ public class MainActivity extends AppCompatActivity implements PreferenceFragmen
                         }
 
                         // Get new FCM registration token
-                        String token = task.getResult();
+                        token = task.getResult();
                         Log.i(TAG,"token "+token);
                     }
                 });
