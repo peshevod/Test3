@@ -230,7 +230,7 @@ public class LoginFragment extends Fragment {
                 cipher = Cipher.getInstance("AES/CBC/PKCS7Padding");
                 cipher.init(Cipher.ENCRYPT_MODE, secretKey);
                 String iv = new String(Base64.encodeToString(cipher.getIV(),Base64.DEFAULT));
-                encryption = new String(Base64.encodeToString(cipher.doFinal(tocrypt.getBytes("UTF-8")),Base64.DEFAULT))+","+iv;
+                encryption = new String(Base64.encodeToString(cipher.doFinal(tocrypt.getBytes("windows-1251")),Base64.DEFAULT))+","+iv;
                 SharedPreferences.Editor ed1=sharedPreferences.edit();
                 ed1.putString(username+"@"+hostname,encryption);
                 ed1.putString("last_user@"+hostname,username);

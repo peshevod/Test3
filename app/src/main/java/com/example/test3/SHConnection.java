@@ -43,6 +43,7 @@ import org.apache.hc.core5.util.Timeout;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.UnsupportedEncodingException;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Date;
@@ -70,7 +71,12 @@ public class SHConnection implements Runnable
     {
         BasicClassicHttpRequest request1=new BasicClassicHttpRequest(Method.GET, service.httpHost,"/login");
         String auth = service.username + ":" + service.password;
-        byte[] encodedAuth = Base64.encode(auth.getBytes(StandardCharsets.UTF_8),Base64.DEFAULT);
+        byte[] encodedAuth = new byte[0];
+        try {
+            encodedAuth = Base64.encode(auth.getBytes("windows-1251"),Base64.DEFAULT);
+        } catch (UnsupportedEncodingException e) {
+            Log.e(TAG, e.getMessage());
+        }
 //                        auth.getBytes(StandardCharsets.ISO_8859_1));
         String authHeader = "Basic " + new String(encodedAuth);
         request1.setHeader(HttpHeaders.AUTHORIZATION, authHeader);
@@ -80,7 +86,7 @@ public class SHConnection implements Runnable
             Log.i(TAG, response1.getReasonPhrase() + " " + code);
             if (code == 200) {
                 String welcome = "";
-                try(JsonReader reader = new JsonReader(new InputStreamReader(response1.getEntity().getContent(), "UTF-8"))) {
+                try(JsonReader reader = new JsonReader(new InputStreamReader(response1.getEntity().getContent(), "windows-1251"))) {
                     reader.beginObject();
                     while (reader.hasNext()) {
                         String name = reader.nextName();
@@ -134,7 +140,7 @@ public class SHConnection implements Runnable
             if (code == 200)
             {
                 String devName = null, devEui = null, version = null;
-                try(JsonReader reader = new JsonReader(new InputStreamReader(response1.getEntity().getContent(), "UTF-8")))
+                try(JsonReader reader = new JsonReader(new InputStreamReader(response1.getEntity().getContent(), "windows-1251")))
                 {
                     reader.beginObject();
                     while (reader.hasNext()) {
@@ -185,7 +191,7 @@ public class SHConnection implements Runnable
             {
                 MySession session=null;
                 Log.i(TAG, "Response=\n"+response1.getEntity().toString());
-                try(JsonReader reader = new JsonReader(new InputStreamReader(response1.getEntity().getContent(), "UTF-8")))
+                try(JsonReader reader = new JsonReader(new InputStreamReader(response1.getEntity().getContent(), "windows-1251")))
                 {
                     reader.beginObject();
                     while (reader.hasNext()) {
