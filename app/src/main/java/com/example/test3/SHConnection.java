@@ -109,14 +109,14 @@ public class SHConnection implements Runnable
             service.main.loginViewModel.getLoginResult().postValue(new LoginResult(new Integer(e.hashCode())));
             Log.i(TAG,e.getMessage());
         }
-        postToken();
+        postToken(true);
     }
 
-    public void postToken()
+    public void postToken(boolean add)
     {
         BasicClassicHttpRequest request1=new BasicClassicHttpRequest(Method.POST, service.httpHost,"/monitor/token");
         request1.addHeader(new BasicHeader("Authorization", "Bearer "+service.token));
-        request1.setEntity(new StringEntity(service.main.token));
+        request1.setEntity(new StringEntity((add ? "+" : "-" )+service.main.token));
         try(CloseableHttpResponse response1= service.shConnectionClient.httpClient.execute(service.httpHost,request1, service.basicHttpContext))
         {
             int code = response1.getCode();

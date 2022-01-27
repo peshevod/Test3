@@ -103,7 +103,8 @@ public class SHConnectionClient {
                 })
                 .setDefaultRequestConfig(RequestConfig.custom()
                         .setConnectionRequestTimeout(Timeout.ofSeconds(3))
-                        .setConnectTimeout(Timeout.ofSeconds(3))
+                        .setConnectTimeout(Timeout.ofSeconds(10))
+                        .setResponseTimeout(Timeout.ofSeconds(15))
                         .build())
                 .build();
     }
