@@ -80,8 +80,8 @@ public class SHConnectionClient {
                         .setTlsVersions(TLS.V_1_3)
                         .build())
                 .setConnPoolPolicy(PoolReusePolicy.FIFO)
-                .setMaxConnPerRoute(2)
-                .setConnectionTimeToLive(TimeValue.ofSeconds(30))
+                .setMaxConnPerRoute(1)
+                .setConnectionTimeToLive(TimeValue.ofMinutes(30))
                 .build();
         httpRequestExecutor=new HttpRequestExecutor(new ConnectionReuseStrategy() {
             @Override
@@ -102,7 +102,7 @@ public class SHConnectionClient {
                     }
                 })
                 .setDefaultRequestConfig(RequestConfig.custom()
-                        .setConnectionRequestTimeout(Timeout.ofSeconds(3))
+                        .setConnectionRequestTimeout(Timeout.ofSeconds(15))
                         .setConnectTimeout(Timeout.ofSeconds(10))
                         .setResponseTimeout(Timeout.ofSeconds(15))
                         .build())
