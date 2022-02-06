@@ -59,6 +59,8 @@ public class MyItemRecyclerViewAdapter extends RecyclerView.Adapter<MyItemRecycl
         if(mSessions!=null) {
             holder.mSesItem = mSessions.get(position);
             holder.mIdView.setText(mSessions.get(position).devName);
+            holder.mSensor1.setText(mSessions.get(position).Sensor1);
+            holder.mSensor2.setText(mSessions.get(position).Sensor2);
             holder.mTime.setText(mSessions.get(position).getTime());
             holder.mPacket.setText("Packet number " + mSessions.get(position).devnonce+"."+mSessions.get(position).fcntup);
             holder.mTemp.setText(""+mSessions.get(position).temperature/10.0+" C");

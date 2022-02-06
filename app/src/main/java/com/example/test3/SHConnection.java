@@ -139,7 +139,7 @@ public class SHConnection implements Runnable
             Log.i(TAG, response1.getReasonPhrase() + " " + code);
             if (code == 200)
             {
-                String devName = null, devEui = null, version = null;
+                String devName = null, devEui = null, version = null, Sensor1=null, Sensor2=null;
                 try(JsonReader reader = new JsonReader(new InputStreamReader(response1.getEntity().getContent(), "windows-1251")))
                 {
                     reader.beginObject();
@@ -158,10 +158,14 @@ public class SHConnection implements Runnable
                                         devEui = reader.nextString();
                                     else if (name.equalsIgnoreCase("version"))
                                         version = reader.nextString();
+                                    else if (name.equalsIgnoreCase("Sensor1"))
+                                        Sensor1 = reader.nextString();
+                                    else if (name.equalsIgnoreCase("Sensor2"))
+                                        Sensor2 = reader.nextString();
                                     else reader.skipValue();
                                 }
-                                service.devices.add(new MyDevice(devName, devEui, version));
-                                Log.i(TAG, "add device " + devName + " Eui=" + devEui + " version=" + version);
+                                service.devices.add(new MyDevice(devName, devEui, version, Sensor1, Sensor2));
+                                Log.i(TAG, "add device " + devName + " Eui=" + devEui + " version=" + version+ " Sensor1=" + Sensor1+ " Sensor2=" + Sensor2);
                                 reader.endObject();
                             }
                             reader.endArray();
@@ -229,6 +233,10 @@ public class SHConnection implements Runnable
                                         session.local_power = reader.nextInt();
                                     else if (name.equalsIgnoreCase("values"))
                                         session.values = reader.nextInt();
+                                    else if (name.equalsIgnoreCase("Sensor1"))
+                                        session.Sensor1 = reader.nextString();
+                                    else if (name.equalsIgnoreCase("Sensor2"))
+                                        session.Sensor2 = reader.nextString();
                                     else reader.skipValue();
                                 }
                                 service.sessions.add(session);

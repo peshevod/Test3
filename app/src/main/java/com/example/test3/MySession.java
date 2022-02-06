@@ -7,6 +7,8 @@ import java.util.TimeZone;
 
 public class MySession {
     public String devName;
+    public String Sensor1;
+    public String Sensor2;
     public GregorianCalendar lastTime;
     public int devnonce;
     public long fcntup;
