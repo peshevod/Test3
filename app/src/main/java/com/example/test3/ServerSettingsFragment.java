@@ -79,11 +79,11 @@ public class ServerSettingsFragment extends PreferenceFragmentCompat {
                 return true;
             }
         });
-        if(oldServer!=null) server.findPreference("delete_set").setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
+        server.findPreference("delete_set").setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
             @Override
             public boolean onPreferenceChange(Preference preference, Object newValue) {
                 Log.i("TLS13","check box new val="+newValue.toString());
-                if((boolean)newValue)
+                if((boolean)newValue && oldServer!=null)
                 {
                     String selectedServer=sharedPreferences.getString("selected_server","");
                     SharedPreferences.Editor ed=sharedPreferences.edit();
