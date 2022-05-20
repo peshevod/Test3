@@ -15,6 +15,7 @@ import androidx.preference.PreferenceCategory;
 import androidx.preference.PreferenceFragmentCompat;
 import androidx.preference.PreferenceManager;
 import androidx.preference.PreferenceScreen;
+import androidx.preference.SwitchPreference;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -145,6 +146,12 @@ public class ServerSettingsFragment extends PreferenceFragmentCompat {
         serverPort.setSummary(oldServer!=null ? sharedPreferences.getString(oldServer+"@server_port","") : "0");
 //        serverPort.setSummaryProvider(EditTextPreference.SimpleSummaryProvider.getInstance());
         preferenceCategory.addPreference(serverPort);
+
+        SwitchPreference delete_set=new SwitchPreference(getActivity());
+        delete_set.setKey("delete_set");
+        delete_set.setTitle("Delete Server");
+        delete_set.setChecked(false);
+        preferenceCategory.addPreference(delete_set);
 
         CheckBoxPreference checkBoxPreference;
         if(oldServer!=null)
