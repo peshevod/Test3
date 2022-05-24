@@ -14,7 +14,7 @@ import androidx.preference.PreferenceScreen;
 import java.util.HashSet;
 import java.util.Set;
 
-/**
+/* *
  * A simple {@link Fragment} subclass.
  * Use the {@link NewSettingsFragment#newInstance} factory method to
  * create an instance of this fragment.
@@ -39,6 +39,7 @@ public class NewSettingsFragment extends PreferenceFragmentCompat {
                 pref.setTitle(s);
                 pref.setSummary("https://"+sharedPreferences.getString(s+"@server_url","")+":"+sharedPreferences.getString(s+"@server_port",""));
                 pref.setFragment("com.example.test3.ServerSettingsFragment");
+                pref.setSelectable(true);
                 preferenceScreen.addPreference(pref);
             }
 

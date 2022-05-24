@@ -1,5 +1,6 @@
 package com.example.test3;
 
+import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.util.Log;
@@ -80,7 +81,7 @@ public class ServerSettingsFragment extends PreferenceFragmentCompat {
                 return true;
             }
         });
-        server.findPreference("delete_set").setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
+        if(oldServer!=null) server.findPreference("delete_set").setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
             @Override
             public boolean onPreferenceChange(Preference preference, Object newValue) {
                 Log.i("TLS13","check box new val="+newValue.toString());
@@ -93,7 +94,15 @@ public class ServerSettingsFragment extends PreferenceFragmentCompat {
                     ed.remove(oldServer+"@server_url");
                     ed.remove(oldServer+"@server_port");
                     ed.putStringSet("available_servers",availableServers);
-                    if(selectedServer.equals(oldServer)) ed.putString("selected_server","");
+                    if(!availableServers.isEmpty())
+                    {
+                        selectedServer=availableServers.iterator().next();
+                    }
+                    else
+                    {
+                        selectedServer="";
+                    }
+                    ed.putString("selected_server",selectedServer);
                     ed.commit();
                 }
                 return true;
@@ -104,21 +113,25 @@ public class ServerSettingsFragment extends PreferenceFragmentCompat {
     @Override
     public void onCreatePreferences(Bundle savedInstanceState, String rootKey) {
 //        setPreferencesFromResource(R.xml.server, rootKey);
+        Context context=getPreferenceManager().getContext();
         sharedPreferences=getPreferenceManager().getSharedPreferences();
         availableServers=sharedPreferences.getStringSet("available_servers", new HashSet<String>());
+        SharedPreferences.Editor ed1=sharedPreferences.edit();
+        ed1.putBoolean("delete_set",false);
+        ed1.commit();
         Bundle bundle=getArguments();
         oldServer=bundle.getString("server_name");
         Log.i("TLS13","oldServer="+oldServer);
 
-        PreferenceScreen preferenceScreen=getPreferenceManager().createPreferenceScreen(getActivity());
+        PreferenceScreen preferenceScreen=getPreferenceManager().createPreferenceScreen(context);
         setPreferenceScreen(preferenceScreen);
 
-        PreferenceCategory preferenceCategory=new PreferenceCategory(getActivity());
+        PreferenceCategory preferenceCategory=new PreferenceCategory(context);
         preferenceCategory.setKey("server_settings");
         preferenceCategory.setTitle(oldServer!=null ? oldServer: "New Server");
         preferenceScreen.addPreference(preferenceCategory);
 
-        EditTextPreference serverName=new EditTextPreference(getActivity());
+        EditTextPreference serverName=new EditTextPreference(context);
         serverName.setKey(oldServer!=null ? oldServer+"@server_name" : "server_name");
         serverName.setTitle("Server Name");
 //        serverName.setSummaryProvider(EditTextPreference.SimpleSummaryProvider.getInstance());
@@ -129,7 +142,7 @@ public class ServerSettingsFragment extends PreferenceFragmentCompat {
         Log.i("TLS13","categ="+preferenceCategory.toString());
         preferenceCategory.addPreference(serverName);
 
-        EditTextPreference serverURL=new EditTextPreference(getActivity());
+        EditTextPreference serverURL=new EditTextPreference(context);
         serverURL.setKey(oldServer!=null ? oldServer+"@server_url" : "server_url");
         serverURL.setTitle("Server URL");
         serverURL.setDefaultValue("");
@@ -138,7 +151,7 @@ public class ServerSettingsFragment extends PreferenceFragmentCompat {
 //        serverURL.setSummaryProvider(EditTextPreference.SimpleSummaryProvider.getInstance());
         preferenceCategory.addPreference(serverURL);
 
-        EditTextPreference serverPort=new EditTextPreference(getActivity());
+        EditTextPreference serverPort=new EditTextPreference(context);
         serverPort.setKey(oldServer!=null ? oldServer+"@server_port" : "server_port");
         serverPort.setTitle("Server Port");
         serverPort.setDefaultValue("0");
@@ -147,18 +160,19 @@ public class ServerSettingsFragment extends PreferenceFragmentCompat {
 //        serverPort.setSummaryProvider(EditTextPreference.SimpleSummaryProvider.getInstance());
         preferenceCategory.addPreference(serverPort);
 
-        SwitchPreference delete_set=new SwitchPreference(getActivity());
+/*        SwitchPreference delete_set=new SwitchPreference(context);
         delete_set.setKey("delete_set");
         delete_set.setTitle("Delete Server");
         delete_set.setChecked(false);
-        preferenceCategory.addPreference(delete_set);
+        preferenceCategory.addPreference(delete_set);*/
 
         CheckBoxPreference checkBoxPreference;
         if(oldServer!=null)
         {
-            checkBoxPreference=new CheckBoxPreference(getActivity());
+            checkBoxPreference=new CheckBoxPreference(context);
             checkBoxPreference.setKey("delete_set");
             checkBoxPreference.setTitle("Delete server");
+            checkBoxPreference.setChecked(false);
             preferenceCategory.addPreference(checkBoxPreference);
         }
 
