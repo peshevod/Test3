@@ -6,4 +6,9 @@
         android:orderInCategory="100"
         android:title="@string/action_set_servers"
         app:showAsAction="never" />
+    <item
+        android:id="@+id/TZ_settings"
+        android:title="Time zone"
+        android:orderInCategory="200"
+        app:showAsAction="never" />
 </menu>

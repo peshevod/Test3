@@ -15,6 +15,9 @@
         <action
             android:id="@+id/action_nav_home_to_login_fragment"
             app:destination="@id/login_fragment" />
+        <action
+            android:id="@+id/action_nav_home_to_TZFragment"
+            app:destination="@id/TZFragment" />
     </fragment>
 
     <fragment
@@ -83,4 +86,12 @@
         android:name="com.example.test3.DevicesFragment"
         android:label="fragment_devices_list"
         tools:layout="@layout/fragment_devices_list" />
+    <fragment
+        android:id="@+id/TZFragment"
+        android:name="com.example.test3.TZFragment"
+        android:label="TZFragment" >
+        <action
+            android:id="@+id/action_TZFragment_to_nav_home"
+            app:destination="@id/nav_home" />
+    </fragment>
 </navigation>

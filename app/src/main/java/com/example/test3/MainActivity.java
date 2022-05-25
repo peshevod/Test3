@@ -217,6 +217,11 @@ public class MainActivity extends AppCompatActivity implements PreferenceFragmen
             }
             return true;
         }
+        else if(id == R.id.TZ_settings)
+        {
+            NavController nc=Navigation.findNavController(this, R.id.nav_host_fragment_content_main);
+            nc.navigate(R.id.action_nav_home_to_TZFragment);
+        }
         return super.onOptionsItemSelected(item);
     }
 
