@@ -18,6 +18,9 @@
         <action
             android:id="@+id/action_nav_home_to_TZFragment"
             app:destination="@id/TZFragment" />
+        <action
+            android:id="@+id/action_nav_home_to_TZFragment2"
+            app:destination="@id/TZFragment" />
     </fragment>
 
     <fragment
@@ -42,8 +45,8 @@
     <fragment
         android:id="@+id/login_fragment"
         android:name="com.example.test3.ui.login.LoginFragment"
-        android:label="fragment_login"
-        tools:layout="@layout/fragment_login" >
+        android:label="Enter login and password"
+        tools:layout="@layout/fragment_login">
         <action
             android:id="@+id/action_login_fragment_to_devicesFragment"
             app:destination="@id/devicesFragment" />
@@ -51,21 +54,32 @@
     <fragment
         android:id="@+id/new_settings_fragment"
         android:name="com.example.test3.NewSettingsFragment"
-        android:label="NewSettingsFragment" >
+        android:label="Server Settings">
         <action
             android:id="@+id/action_newSettingsFragment_to_nav_home"
-            app:destination="@id/nav_home" />
+            app:destination="@id/nav_home"
+            app:popUpTo="@id/nav_home"
+            app:popUpToInclusive="true" />
         <action
             android:id="@+id/action_newSettingsFragment_to_serverSelectFragment"
-            app:destination="@id/server_select_fragment" />
+            app:destination="@id/server_select_fragment"
+            app:popUpTo="@id/new_settings_fragment"
+            app:popUpToInclusive="false" />
         <action
             android:id="@+id/action_newSettingsFragment_to_serverSettingsFragment"
-            app:destination="@id/server_settings_fragment" />
+            app:destination="@id/server_settings_fragment"
+            app:popUpTo="@id/new_settings_fragment"
+            app:popUpToInclusive="false" />
+        <action
+            android:id="@+id/action_new_settings_fragment_to_TZFragment"
+            app:destination="@id/TZFragment"
+            app:popUpTo="@id/nav_home"
+            app:popUpToInclusive="false" />
     </fragment>
     <fragment
         android:id="@+id/server_select_fragment"
         android:name="com.example.test3.ServerSelectFragment"
-        android:label="ServerSelectFragment" >
+        android:label="Select Server">
         <action
             android:id="@+id/action_serverSelectFragment_to_newSettingsFragment"
             app:destination="@id/new_settings_fragment" />
@@ -73,7 +87,7 @@
     <fragment
         android:id="@+id/server_settings_fragment"
         android:name="com.example.test3.ServerSettingsFragment"
-        android:label="ServerSettingsFragment" >
+        android:label="Server Settings">
         <action
             android:id="@+id/action_serverSettingsFragment_to_newSettingsFragment"
             app:destination="@id/new_settings_fragment" />
@@ -84,14 +98,21 @@
     <fragment
         android:id="@+id/devicesFragment"
         android:name="com.example.test3.DevicesFragment"
-        android:label="fragment_devices_list"
+        android:label="Devices"
         tools:layout="@layout/fragment_devices_list" />
     <fragment
         android:id="@+id/TZFragment"
         android:name="com.example.test3.TZFragment"
-        android:label="TZFragment" >
+        android:label="Time Zone">
         <action
             android:id="@+id/action_TZFragment_to_nav_home"
-            app:destination="@id/nav_home" />
+            app:destination="@id/nav_home"
+            app:popUpTo="@id/nav_home"
+            app:popUpToInclusive="true" />
+        <action
+            android:id="@+id/action_TZFragment_to_new_settings_fragment"
+            app:destination="@id/new_settings_fragment"
+            app:popUpTo="@id/nav_home"
+            app:popUpToInclusive="false" />
     </fragment>
 </navigation>

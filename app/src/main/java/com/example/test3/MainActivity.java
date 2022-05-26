@@ -202,9 +202,10 @@ public class MainActivity extends AppCompatActivity implements PreferenceFragmen
         // automatically handle clicks on the Home/Up button, so long
         // as you specify a parent activity in AndroidManifest.xml.
         int id = item.getItemId();
+        NavController nc=Navigation.findNavController(this, R.id.nav_host_fragment_content_main);
+        int cur_id=nc.getCurrentDestination().getId();
         if (id == R.id.action_settings) {
-            NavController nc=Navigation.findNavController(this, R.id.nav_host_fragment_content_main);
-            switch(nc.getCurrentDestination().getId()) {
+            switch(cur_id) {
                 case R.id.nav_home:
                     nc.navigate(R.id.action_nav_home_to_newSettingsFragment);
                     break;
@@ -214,13 +215,23 @@ public class MainActivity extends AppCompatActivity implements PreferenceFragmen
                 case R.id.nav_slideshow:
                     nc.navigate(R.id.action_nav_slideshow_to_newSettingsFragment);
                     break;
+                case R.id.TZFragment:
+                    nc.navigate(R.id.action_TZFragment_to_new_settings_fragment);
+                    break;
             }
             return true;
         }
         else if(id == R.id.TZ_settings)
         {
-            NavController nc=Navigation.findNavController(this, R.id.nav_host_fragment_content_main);
-            nc.navigate(R.id.action_nav_home_to_TZFragment);
+            switch(cur_id)
+            {
+                case R.id.new_settings_fragment:
+                    nc.navigate(R.id.action_new_settings_fragment_to_TZFragment);
+                    break;
+                case R.id.nav_home:
+                    nc.navigate(R.id.action_nav_home_to_TZFragment);
+                    break;
+            }
         }
         return super.onOptionsItemSelected(item);
     }

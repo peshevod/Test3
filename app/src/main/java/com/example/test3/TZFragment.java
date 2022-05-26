@@ -4,12 +4,15 @@ import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.util.Log;
 
+import androidx.annotation.NonNull;
 import androidx.preference.ListPreference;
 import androidx.preference.Preference;
 import androidx.preference.PreferenceFragmentCompat;
 import androidx.preference.PreferenceScreen;
 
 import java.util.HashSet;
+import java.util.SimpleTimeZone;
+import java.util.TimeZone;
 
 public class TZFragment extends PreferenceFragmentCompat {
 
@@ -21,11 +24,10 @@ public class TZFragment extends PreferenceFragmentCompat {
         preferenceScreen.removeAll();
         listPreference = new ListPreference(getActivity());
         String selectedTZ = sharedPreferences.getString("TZ", "");
+        CharSequence[] cs=TimeZone.getAvailableIDs();
 
         listPreference.setKey("TZ");
-        CharSequence[] cs = new CharSequence[2];
-        cs[0] = "Europe";
-        cs[1] = "US";
+
         listPreference.setEntries(cs);
         listPreference.setEntryValues(cs);
         listPreference.setTitle("Select TZ");
