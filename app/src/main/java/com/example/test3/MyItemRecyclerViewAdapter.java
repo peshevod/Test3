@@ -1,7 +1,5 @@
 package com.example.test3;
 
-import androidx.annotation.ColorRes;
-import androidx.navigation.Navigation;
 import androidx.recyclerview.widget.RecyclerView;
 
 import android.content.Context;
@@ -21,24 +19,24 @@ import java.util.List;
  * {@link RecyclerView.Adapter} that can display a {@link PlaceholderItem}.
  * TODO: Replace the implementation with code for your data type.
  */
-public class MyItemRecyclerViewAdapter extends RecyclerView.Adapter<MyItemRecyclerViewAdapter.ViewHolder> {
+public class MyItemRecyclerViewAdapter extends RecyclerView.Adapter<MyItemRecyclerViewAdapter.myViewHolder> {
 
     public static final int VIEW_MODE_SHORT=1;
     public static final int VIEW_MODE_MEDIUM=2;
     public static final int VIEW_MODE_LARGE=3;
-    public List<MySession> mSessions;
+    public List<MySession> mySessions;
     private int viewMode;
 
     Context ctx;
 
-    public MyItemRecyclerViewAdapter(List<MySession>  items) {
-        mSessions=items;
+    public MyItemRecyclerViewAdapter(List<MySession>  mySessions) {
+        this.mySessions =mySessions;
         viewMode=MyItemRecyclerViewAdapter.VIEW_MODE_MEDIUM;
     }
 
-    public void setItems(List<MySession>  items)
+    public void setItems(List<MySession>  mySessions)
     {
-        mSessions=items;
+        this.mySessions =mySessions;
     }
 
     public void setViewMode(int viewMode)
@@ -47,121 +45,121 @@ public class MyItemRecyclerViewAdapter extends RecyclerView.Adapter<MyItemRecycl
     }
 
     @Override
-    public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+    public myViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
 
         ctx=parent.getContext();
-        return new ViewHolder(FragmentDevicesBinding.inflate(LayoutInflater.from(ctx), parent, false));
+        return new myViewHolder(FragmentDevicesBinding.inflate(LayoutInflater.from(ctx), parent, false));
 
     }
 
     @Override
-    public void onBindViewHolder(final ViewHolder holder, int position) {
-        if(mSessions!=null) {
-            holder.mSesItem = mSessions.get(position);
-            holder.mIdView.setText(mSessions.get(position).devName);
-            holder.mSensor1.setText(mSessions.get(position).Sensor1);
-            holder.mSensor2.setText(mSessions.get(position).Sensor2);
-            holder.mTime.setText(mSessions.get(position).getTime());
-            holder.mPacket.setText("Packet number " + mSessions.get(position).devnonce+"."+mSessions.get(position).fcntup);
-            holder.mTemp.setText(""+mSessions.get(position).temperature/10.0+" C");
-            holder.mBat.setText(""+mSessions.get(position).batlevel*100/7+"%");
-            holder.mRssi.setText("DEV RSSI "+mSessions.get(position).rssi+" dbm");
-            holder.mSnr.setText("DEV SNR "+mSessions.get(position).snr);
-            holder.mLrssi.setText("GW RSSI "+mSessions.get(position).local_rssi+" dbm");
-            holder.mLsnr.setText("GW SNR "+mSessions.get(position).local_snr);
-            holder.mPower.setText("DEV Power "+mSessions.get(position).power+" dbm");
-            holder.mLpower.setText("GW Power "+mSessions.get(position).local_power+" dbm");
-            if((mSessions.get(position).values & 0x00000001) ==1)
+    public void onBindViewHolder(final myViewHolder holder, int devNumber) {
+        if(mySessions !=null) {
+            holder.mSesItem = mySessions.get(devNumber);
+            holder.deviceNameText.setText(mySessions.get(devNumber).devName);
+            holder.sensor1.setText(mySessions.get(devNumber).sensor1);
+            holder.sensor2.setText(mySessions.get(devNumber).sensor2);
+            holder.time.setText(mySessions.get(devNumber).getTime());
+            holder.packetNumber.setText("Packet number " + mySessions.get(devNumber).devNonce +"."+ mySessions.get(devNumber).fcntUp);
+            holder.temperature.setText(""+ mySessions.get(devNumber).temperature/10.0+" C");
+            holder.battery.setText(""+ mySessions.get(devNumber).battery *100/7+"%");
+            holder.remoteRSSI.setText("DEV RSSI "+ mySessions.get(devNumber).remoteRSSI +" dbm");
+            holder.remoteSNR.setText("DEV SNR "+ mySessions.get(devNumber).remoteSNR);
+            holder.localRSSI.setText("GW RSSI "+ mySessions.get(devNumber).localRssi +" dbm");
+            holder.localSNR.setText("GW SNR "+ mySessions.get(devNumber).localSnr);
+            holder.remotePower.setText("DEV Power "+ mySessions.get(devNumber).remotePower +" dbm");
+            holder.localPower.setText("GW Power "+ mySessions.get(devNumber).localPower +" dbm");
+            if((mySessions.get(devNumber).values & 0x00000001) ==1)
             {
-                holder.mSensor1.setChipBackgroundColorResource(R.color.alert);
-                holder.mSensor1.setChipIconResource(R.drawable.alert);
+                holder.sensor1.setChipBackgroundColorResource(R.color.alert);
+                holder.sensor1.setChipIconResource(R.drawable.alert);
             }
             else
             {
-                holder.mSensor1.setChipBackgroundColorResource(R.color.good);
-                holder.mSensor1.setChipIconResource(R.drawable.good);
+                holder.sensor1.setChipBackgroundColorResource(R.color.good);
+                holder.sensor1.setChipIconResource(R.drawable.good);
             }
-            if((mSessions.get(position).values & 0x00000002) ==1)
+            if((mySessions.get(devNumber).values & 0x00000002) ==1)
             {
-                holder.mSensor2.setChipBackgroundColorResource(R.color.alert);
-                holder.mSensor2.setChipIconResource(R.drawable.alert);
+                holder.sensor2.setChipBackgroundColorResource(R.color.alert);
+                holder.sensor2.setChipIconResource(R.drawable.alert);
             }
             else
             {
-                holder.mSensor2.setChipBackgroundColorResource(R.color.good);
-                holder.mSensor2.setChipIconResource(R.drawable.good);
+                holder.sensor2.setChipBackgroundColorResource(R.color.good);
+                holder.sensor2.setChipIconResource(R.drawable.good);
             }
         }
-        Log.i("TLS13 MyItemRecView", "position="+position+" id="+holder.mIdView.getText()+" content="+holder.mTime.getText());
+        Log.i("TLS13 MyItemRecView", "position="+devNumber+" id="+holder.deviceNameText.getText()+" content="+holder.time.getText());
     }
 
     @Override
     public int getItemCount() {
-        return mSessions.size();
+        return mySessions.size();
     }
 
-    public class ViewHolder extends RecyclerView.ViewHolder {
-        final TextView mIdView;
-        final ChipGroup mChipGroup;
-        public final Chip mSensor1;
-        public final Chip mSensor2;
-        public final Chip mTime = new Chip(ctx);
-        public final Chip mTemp = new Chip(ctx);
-        public final Chip mBat = new Chip(ctx);
-        public final Chip mPacket = new Chip(ctx);
-        public final Chip mRssi = new Chip(ctx);
-        public final Chip mSnr = new Chip(ctx);
-        public final Chip mLrssi = new Chip(ctx);
-        public final Chip mLsnr = new Chip(ctx);
-        public final Chip mPower= new Chip(ctx);
-        public final Chip mLpower = new Chip(ctx);
-        public MyDevice mItem;
+    public class myViewHolder extends RecyclerView.ViewHolder {
+        final TextView deviceNameText;
+        final ChipGroup deviceData;
+        public final Chip sensor1;
+        public final Chip sensor2;
+        public final Chip time = new Chip(ctx);
+        public final Chip temperature = new Chip(ctx);
+        public final Chip battery = new Chip(ctx);
+        public final Chip packetNumber = new Chip(ctx);
+        public final Chip remoteRSSI = new Chip(ctx);
+        public final Chip remoteSNR = new Chip(ctx);
+        public final Chip localRSSI = new Chip(ctx);
+        public final Chip localSNR = new Chip(ctx);
+        public final Chip remotePower = new Chip(ctx);
+        public final Chip localPower = new Chip(ctx);
+//        public MyDevice mItem;
         public MySession mSesItem;
 
-        public ViewHolder(FragmentDevicesBinding binding) {
+        public myViewHolder(FragmentDevicesBinding binding) {
             super(binding.getRoot());
-//            mIdView = binding.itemNumber;
+//            deviceNameText = binding.itemNumber;
 
-            mIdView=binding.tv;
-            mSensor1=binding.chip4;
-            mSensor2=binding.chip5;
-            mChipGroup=binding.cg;
-            mTime.setChipIconResource(R.drawable.clock);
-            mTime.setChipBackgroundColorResource(R.color.teal_200);
-            mPacket.setChipBackgroundColorResource(R.color.teal_700);
-            mTemp.setChipIconResource(R.drawable.thermo);
-            mTemp.setChipBackgroundColorResource(R.color.purple_700);
-            mTemp.setTextColor(0xFFFFFFFF);
-            mBat.setChipIconResource(R.drawable.bat);
-            mBat.setChipBackgroundColorResource(R.color.batlevel);
-            mRssi.setChipBackgroundColorResource(R.color.teal_200);
-            mSnr.setChipBackgroundColorResource(R.color.teal_200);
-            mLrssi.setChipBackgroundColorResource(R.color.teal_200);
-            mLsnr.setChipBackgroundColorResource(R.color.teal_200);
-            mPower.setChipBackgroundColorResource(R.color.teal_200);
-            mLpower.setChipBackgroundColorResource(R.color.teal_200);
+            deviceNameText =binding.devicename;
+            sensor1=binding.sensor1;
+            sensor2=binding.sensor2;
+            deviceData =binding.devicedata;
+            time.setChipIconResource(R.drawable.clock);
+            time.setChipBackgroundColorResource(R.color.teal_200);
+            packetNumber.setChipBackgroundColorResource(R.color.teal_700);
+            temperature.setChipIconResource(R.drawable.thermo);
+            temperature.setChipBackgroundColorResource(R.color.purple_700);
+            temperature.setTextColor(0xFFFFFFFF);
+            battery.setChipIconResource(R.drawable.bat);
+            battery.setChipBackgroundColorResource(R.color.batlevel);
+            remoteRSSI.setChipBackgroundColorResource(R.color.teal_200);
+            remoteSNR.setChipBackgroundColorResource(R.color.teal_200);
+            localRSSI.setChipBackgroundColorResource(R.color.teal_200);
+            localSNR.setChipBackgroundColorResource(R.color.teal_200);
+            remotePower.setChipBackgroundColorResource(R.color.teal_200);
+            localPower.setChipBackgroundColorResource(R.color.teal_200);
             if(viewMode!=MyItemRecyclerViewAdapter.VIEW_MODE_SHORT)
             {
-                mChipGroup.addView(mTime);
-                mChipGroup.addView(mTemp);
-                mChipGroup.addView(mBat);
+                deviceData.addView(time);
+                deviceData.addView(temperature);
+                deviceData.addView(battery);
             }
             if(viewMode==MyItemRecyclerViewAdapter.VIEW_MODE_LARGE)
             {
-                mChipGroup.addView(mPacket);
-                mChipGroup.addView(mRssi);
-                mChipGroup.addView(mSnr);
-                mChipGroup.addView(mLrssi);
-                mChipGroup.addView(mLsnr);
-                mChipGroup.addView(mPower);
-                mChipGroup.addView(mLpower);
+                deviceData.addView(packetNumber);
+                deviceData.addView(remoteRSSI);
+                deviceData.addView(remoteSNR);
+                deviceData.addView(localRSSI);
+                deviceData.addView(localSNR);
+                deviceData.addView(remotePower);
+                deviceData.addView(localPower);
             }
 
         }
 
         @Override
         public String toString() {
-            return super.toString() + " '" + mTime.getText() + "'";
+            return super.toString() + " '" + time.getText() + "'";
         }
     }
 }

@@ -8,7 +8,7 @@
     android:paddingEnd="5dp">
 
     <TextView
-        android:id="@+id/tv"
+        android:id="@+id/devicename"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="16dp"
@@ -31,7 +31,7 @@
         android:paddingEnd="5dp">
 
         <com.google.android.material.chip.Chip
-            android:id="@+id/chip4"
+            android:id="@+id/sensor1"
             android:text="Sensor1"
             android:textColor="@android:color/white"
             android:layout_width="wrap_content"
@@ -41,7 +41,7 @@
         />
 
         <com.google.android.material.chip.Chip
-            android:id="@+id/chip5"
+            android:id="@+id/sensor2"
             android:text="Sensor2"
             android:textColor="@android:color/white"
             android:layout_width="wrap_content"
@@ -67,7 +67,7 @@
         android:paddingEnd="5dp">
 
     <com.google.android.material.chip.ChipGroup
-        android:id="@+id/cg"
+        android:id="@+id/devicedata"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="5dp"

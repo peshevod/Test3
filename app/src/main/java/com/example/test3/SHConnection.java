@@ -8,47 +8,23 @@ import com.example.test3.data.model.LoggedInUser;
 import com.example.test3.ui.login.LoginResult;
 
 import org.apache.hc.client5.http.HttpRoute;
-import org.apache.hc.client5.http.auth.AuthScope;
-import org.apache.hc.client5.http.auth.UsernamePasswordCredentials;
-import org.apache.hc.client5.http.config.RequestConfig;
 import org.apache.hc.client5.http.impl.DefaultSchemePortResolver;
-import org.apache.hc.client5.http.impl.auth.BasicCredentialsProvider;
-import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpResponse;
-import org.apache.hc.client5.http.impl.classic.HttpClientBuilder;
-import org.apache.hc.client5.http.impl.io.PoolingHttpClientConnectionManager;
-import org.apache.hc.client5.http.io.ConnectionEndpoint;
-import org.apache.hc.client5.http.io.LeaseRequest;
 import org.apache.hc.client5.http.routing.RoutingSupport;
-import org.apache.hc.core5.http.ClassicHttpRequest;
-import org.apache.hc.core5.http.ConnectionReuseStrategy;
-import org.apache.hc.core5.http.Header;
-import org.apache.hc.core5.http.HttpEntity;
 import org.apache.hc.core5.http.HttpHeaders;
 import org.apache.hc.core5.http.HttpHost;
-import org.apache.hc.core5.http.HttpRequest;
-import org.apache.hc.core5.http.HttpResponse;
 import org.apache.hc.core5.http.Method;
-import org.apache.hc.core5.http.impl.io.HttpRequestExecutor;
 import org.apache.hc.core5.http.io.entity.StringEntity;
-import org.apache.hc.core5.http.io.support.ClassicRequestBuilder;
 import org.apache.hc.core5.http.message.BasicClassicHttpRequest;
 import org.apache.hc.core5.http.message.BasicHeader;
-import org.apache.hc.core5.http.protocol.BasicHttpContext;
-import org.apache.hc.core5.http.protocol.HttpContext;
 import org.apache.hc.core5.io.CloseMode;
 import org.apache.hc.core5.util.TimeValue;
 import org.apache.hc.core5.util.Timeout;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashSet;
-import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;
 
@@ -212,35 +188,35 @@ public class SHConnection implements Runnable
                                     else if (name.equalsIgnoreCase("time"))
                                         session.setTime(reader.nextLong());
                                     else if (name.equalsIgnoreCase("devnonce"))
-                                        session.devnonce = reader.nextInt();
+                                        session.devNonce = reader.nextInt();
                                     else if (name.equalsIgnoreCase("fcntup"))
-                                        session.fcntup = reader.nextLong();
+                                        session.fcntUp = reader.nextLong();
                                     else if (name.equalsIgnoreCase("temperature"))
                                         session.temperature = reader.nextInt();
                                     else if (name.equalsIgnoreCase("batlevel"))
-                                        session.batlevel = reader.nextInt();
+                                        session.battery = reader.nextInt();
                                     else if (name.equalsIgnoreCase("rssi"))
-                                        session.rssi = reader.nextInt();
+                                        session.remoteRSSI = reader.nextInt();
                                     else if (name.equalsIgnoreCase("snr"))
-                                        session.snr = reader.nextInt();
+                                        session.remoteSNR = reader.nextInt();
                                     else if (name.equalsIgnoreCase("local_rssi"))
-                                        session.local_rssi = reader.nextInt();
+                                        session.localRssi = reader.nextInt();
                                     else if (name.equalsIgnoreCase("local_snr"))
-                                        session.local_snr = reader.nextInt();
+                                        session.localSnr = reader.nextInt();
                                     else if (name.equalsIgnoreCase("power"))
-                                        session.power = reader.nextInt();
+                                        session.remotePower = reader.nextInt();
                                     else if (name.equalsIgnoreCase("local_power"))
-                                        session.local_power = reader.nextInt();
+                                        session.localPower = reader.nextInt();
                                     else if (name.equalsIgnoreCase("values"))
                                         session.values = reader.nextInt();
                                     else if (name.equalsIgnoreCase("Sensor1"))
-                                        session.Sensor1 = reader.nextString();
+                                        session.sensor1 = reader.nextString();
                                     else if (name.equalsIgnoreCase("Sensor2"))
-                                        session.Sensor2 = reader.nextString();
+                                        session.sensor2 = reader.nextString();
                                     else reader.skipValue();
                                 }
                                 service.sessions.add(session);
-                                Log.i(TAG, "add session " + session.devName + " time=" + session.lastTime + " devnonce=" + session.devnonce);
+                                Log.i(TAG, "add session " + session.devName + " time=" + session.lastDataTime + " devnonce=" + session.devNonce);
                                 reader.endObject();
                             }
                             reader.endArray();
