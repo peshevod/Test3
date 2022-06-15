@@ -1,15 +1,16 @@
 package com.example.test3;
 
+import android.content.SharedPreferences;
+
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.GregorianCalendar;
-import java.util.TimeZone;
 
 public class MySession {
     public String devName;
     public String sensor1;
     public String sensor2;
-    public GregorianCalendar lastDataTime;
+    public GregorianCalendar lastDataTime,currentTime;
     public int devNonce;
     public long fcntUp;
     public int temperature;
@@ -22,10 +23,10 @@ public class MySession {
     public int localSnr;
     public int values;
 
-    public MySession(String devName)
+    public MySession(String devName, MainActivity main)
     {
         this.devName=devName;
-        lastDataTime =new GregorianCalendar(TimeZone.getTimeZone("Europe/Moscow"));
+        lastDataTime =new GregorianCalendar();
     }
 
     public void setTime(long time)

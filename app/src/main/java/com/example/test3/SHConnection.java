@@ -184,7 +184,7 @@ public class SHConnection implements Runnable
                                 while (reader.hasNext()) {
                                     String name = reader.nextName();
                                     if (name.equalsIgnoreCase("Device"))
-                                        session=new MySession(reader.nextString());
+                                        session=new MySession(reader.nextString(), service.main);
                                     else if (name.equalsIgnoreCase("time"))
                                         session.setTime(reader.nextLong());
                                     else if (name.equalsIgnoreCase("devnonce"))

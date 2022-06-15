@@ -10,5 +10,6 @@
         android:id="@+id/TZ_settings"
         android:title="Time zone"
         android:orderInCategory="200"
+        android:visible="false"
         app:showAsAction="never" />
 </menu>
