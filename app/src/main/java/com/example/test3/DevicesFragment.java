@@ -129,6 +129,7 @@ public class DevicesFragment extends Fragment {
                         Log.i(TAG,"Request completed");
                         main.shConnectionService.requestCompleted.removeObserver(this);
                         myItemRecyclerViewAdapter.setItems(main.shConnectionService.sessions);
+                        myItemRecyclerViewAdapter.notifyDataSetChanged();
                     } else Log.i(TAG,"Request started");
                 }
             });
