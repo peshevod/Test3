@@ -51,7 +51,7 @@ public class LoginRepository {
     public Result<LoggedInUser> login(SHConnectionService service, String username, String password) {
         // handle login
         Log.i("TLS13","LoginRepository login");
-        Result<LoggedInUser> result = dataSource.login(service, username, password);
+        Result<LoggedInUser> result = dataSource.login(username, password);
         if (result instanceof Result.Success) {
             setLoggedInUser(((Result.Success<LoggedInUser>) result).getData());
         }

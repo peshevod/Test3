@@ -13,16 +13,16 @@ import com.example.test3.data.model.LoggedInUser;
  * Class that handles authentication w/ login credentials and retrieves user information.
  */
 public class LoginDataSource {
-//    private SHConnectionService service;
+    private SHConnectionService service;
     private LoggedInUser loggedInUser;
     private Exception error;
     private boolean success=false;
-/*    public LoginDataSource(SHConnectionService service)
+    public LoginDataSource(SHConnectionService service)
     {
         this.service=service;
-    }*/
+    }
 
-    public Result<LoggedInUser> login(SHConnectionService service, String username, String password) {
+    public Result<LoggedInUser> login(String username, String password) {
 
         Log.i("TLS13","Datasource login");
         service.login(new SHConnection(service) {

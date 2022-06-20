@@ -33,6 +33,8 @@ import android.widget.Toast;
 
 import com.example.test3.MainActivity;
 import com.example.test3.MyItemRecyclerViewAdapter;
+import com.example.test3.data.LoginDataSource;
+import com.example.test3.data.LoginRepository;
 import com.example.test3.data.model.LoggedInUser;
 import com.example.test3.databinding.FragmentLoginBinding;
 
@@ -66,7 +68,7 @@ public class LoginFragment extends Fragment {
 
     private LoginViewModel loginViewModel;
     private FragmentLoginBinding binding;
-    public MainActivity main;
+//    public MainActivity main;
     SharedPreferences sharedPreferences;
     CheckBox remember;
     EditText usernameEditText;
@@ -113,9 +115,10 @@ public class LoginFragment extends Fragment {
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        loginViewModel = new ViewModelProvider(this, new LoginViewModelFactory())
-                .get(LoginViewModel.class);
-        main.loginViewModel=loginViewModel;
+//        loginViewModel = new ViewModelProvider(this, new LoginViewModelFactory())
+//                .get(LoginViewModel.class);
+        loginViewModel = new LoginViewModel(LoginRepository.getInstance(new LoginDataSource(((MainActivity)(this.getActivity())).shConnectionService)));
+//        main.loginViewModel=loginViewModel;
         sharedPreferences= PreferenceManager.getDefaultSharedPreferences(getActivity());
         remember = binding.CheckBox;
         usernameEditText = binding.username;
