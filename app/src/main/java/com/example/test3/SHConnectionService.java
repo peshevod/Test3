@@ -58,11 +58,11 @@ public class SHConnectionService extends Service {
         shConnection=new SHConnection(this);
         pool.execute(shConnection);
     }
-    public void login(String username, String password) {
+    public void login(SHConnection shConnection, String username, String password) {
         this.username=username;
         this.password=password;
 //        requestCompleted.setValue(false);
-        shConnection=new SHConnection(this);
+//        shConnection=new SHConnection(this);
         cmd=SHConnection.CMD_LOGIN;
         pool.execute(shConnection);
     }

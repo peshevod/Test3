@@ -73,6 +73,7 @@ public class LoginFragment extends Fragment {
     EditText passwordEditText;
     private String TAG="TLS13 LoginFragment";
 
+
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater,
@@ -191,7 +192,7 @@ public class LoginFragment extends Fragment {
             @Override
             public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
                 if (actionId == EditorInfo.IME_ACTION_DONE) {
-                    loginViewModel.login(main, usernameEditText.getText().toString(),
+                    loginViewModel.login(main.shConnectionService, usernameEditText.getText().toString(),
                             passwordEditText.getText().toString());
                 }
                 return false;
@@ -202,7 +203,7 @@ public class LoginFragment extends Fragment {
             @Override
             public void onClick(View v) {
                 loadingProgressBar.setVisibility(View.VISIBLE);
-                loginViewModel.login(main, usernameEditText.getText().toString(),
+                loginViewModel.login(main.shConnectionService, usernameEditText.getText().toString(),
                         passwordEditText.getText().toString());
             }
         });
@@ -311,12 +312,12 @@ public class LoginFragment extends Fragment {
         }
     }
 
-    private boolean rememberCredentials(LoggedInUser loggedInUser){
-        return encrypt(loggedInUser.getUserName(), loggedInUser.getHostName(), loggedInUser.getPassword());
+    private boolean rememberCredentials(LoggedInUserView loggedInUser){
+        return encrypt(loggedInUser.getDisplayName(),"hostname","password");
     }
 
 
-    private void updateUiWithUser(LoggedInUser model) {
+    private void updateUiWithUser(LoggedInUserView model) {
         String welcome = getString(R.string.welcome) + model.getDisplayName();
         if(sharedPreferences.getBoolean("remember_credentials",false)) rememberCredentials(model);
         // TODO : initiate successful logged in experience

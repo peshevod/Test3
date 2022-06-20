@@ -5,28 +5,29 @@ package com.example.test3.data.model;
  */
 public class LoggedInUser {
 
-    private String userId;
+//    private String userId;
     private String displayName;
     private String userName;
-    private String password;
-    private String hostName;
+//    private String password;
+//    private String hostName;
 
-    public LoggedInUser(String userName, String password, String hostName, String userId, String displayName) {
+//    public LoggedInUser(String userName, String password, String hostName, String userId, String displayName) {
+    public LoggedInUser(String userName, String displayName) {
         this.userName=userName;
-        this.password=password;
-        this.hostName=hostName;
-        this.userId = userId;
+//        this.password=password;
+//        this.hostName=hostName;
+//        this.userId = userId;
         this.displayName = displayName;
     }
 
-    public String getUserId() {
+/*    public String getUserId() {
         return userId;
-    }
+    }*/
 
     public String getDisplayName() {
         return displayName;
     }
     public String getUserName() { return userName; }
-    public String getPassword() { return password; }
-    public String getHostName() { return hostName; }
+//    public String getPassword() { return password; }
+//    public String getHostName() { return hostName; }
 }

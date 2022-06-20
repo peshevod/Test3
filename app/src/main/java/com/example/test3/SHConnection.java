@@ -43,6 +43,10 @@ public class SHConnection implements Runnable
         this.service=service;
     }
 
+    public void onLoginSuccess(String welcome){}
+
+    public void onLoginFailure(Exception error){}
+
     public void login()
     {
         BasicClassicHttpRequest request1=new BasicClassicHttpRequest(Method.GET, service.httpHost,"/login");
@@ -73,16 +77,20 @@ public class SHConnection implements Runnable
                     }
                     reader.endObject();
                 }
-                LoggedInUser loggedInUser = new LoggedInUser(service.username, service.password, service.httpHost.getHostName(), service.username, welcome);
+/*                LoggedInUser loggedInUser = new LoggedInUser(service.username, service.password, service.httpHost.getHostName(), service.username, welcome);
                 service.main.loginViewModel.getLoginRepository().setLoggedInUser(loggedInUser);
                 service.main.login_state = MainActivity.LOGGED_IN;
                 service.main.loginViewModel.getLoginResult().postValue(new LoginResult(loggedInUser));
                 Log.i(TAG, service.username + " " + welcome);
                 service.shConnectionClient.connMgr.release(service.connectionEndpoint, null, TimeValue.ofSeconds(1));
+*/
+                onLoginSuccess(welcome);
+                Log.i(TAG, service.username + " " + welcome);
             }
         }
         catch (IOException e) {
-            service.main.loginViewModel.getLoginResult().postValue(new LoginResult(new Integer(e.hashCode())));
+            onLoginFailure(e);
+            //            service.main.loginViewModel.getLoginResult().postValue(new LoginResult(new Integer(e.hashCode())));
             Log.i(TAG,e.getMessage());
         }
         postToken(true);

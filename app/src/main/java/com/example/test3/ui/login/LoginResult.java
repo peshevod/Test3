@@ -9,20 +9,20 @@ import com.example.test3.data.model.LoggedInUser;
  */
 public class LoginResult {
     @Nullable
-    private LoggedInUser success;
+    private LoggedInUserView success;
     @Nullable
     private Integer error;
 
-    public LoginResult(@Nullable Integer error) {
+    LoginResult(@Nullable Integer error) {
         this.error = error;
     }
 
-    public LoginResult(@Nullable LoggedInUser success) {
+    LoginResult(@Nullable LoggedInUserView success) {
         this.success = success;
     }
 
     @Nullable
-    LoggedInUser getSuccess() {
+    LoggedInUserView getSuccess() {
         return success;
     }
 
