@@ -68,7 +68,7 @@ public class LoginFragment extends Fragment {
 
     private LoginViewModel loginViewModel;
     private FragmentLoginBinding binding;
-//    public MainActivity main;
+    public MainActivity main;
     SharedPreferences sharedPreferences;
     CheckBox remember;
     EditText usernameEditText;
@@ -117,7 +117,8 @@ public class LoginFragment extends Fragment {
         super.onViewCreated(view, savedInstanceState);
 //        loginViewModel = new ViewModelProvider(this, new LoginViewModelFactory())
 //                .get(LoginViewModel.class);
-        loginViewModel = new LoginViewModel(LoginRepository.getInstance(new LoginDataSource(((MainActivity)(this.getActivity())).shConnectionService)));
+        main=(MainActivity)(this.getActivity());
+        loginViewModel = new LoginViewModel(LoginRepository.getInstance(new LoginDataSource(main.shConnectionService)));
 //        main.loginViewModel=loginViewModel;
         sharedPreferences= PreferenceManager.getDefaultSharedPreferences(getActivity());
         remember = binding.CheckBox;
