@@ -83,7 +83,7 @@ public class MainActivity extends AppCompatActivity implements PreferenceFragmen
     private ActivityMainBinding binding;
     private NavHeaderMainBinding navbind;
     public boolean connected;
-    SharedPreferences sharedPreferences;
+    public SharedPreferences sharedPreferences;
     private ProgressBar spinner;
     public SSLContext ctx=null;
     public MainActivity main;
@@ -120,7 +120,7 @@ public class MainActivity extends AppCompatActivity implements PreferenceFragmen
                         .setAction("Action", null).show();
             }
         });
-        SharedPreferences sharedPreferences =
+        sharedPreferences =
                 PreferenceManager.getDefaultSharedPreferences(this /* Activity context */);
 
         DrawerLayout drawer = binding.drawerLayout;

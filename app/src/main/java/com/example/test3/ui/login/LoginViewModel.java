@@ -4,6 +4,7 @@ import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModel;
 
+import android.util.Log;
 import android.util.Patterns;
 
 import com.example.test3.MainActivity;
@@ -32,14 +33,15 @@ public class LoginViewModel extends ViewModel {
         return loginResult;
     }
 
-    public void login(SHConnectionService service, String username, String password) {
+    public void login(SHConnectionService service, String username, String password, boolean remember) {
         // can be launched in a separate asynchronous job
-        Result<LoggedInUser> result = loginRepository.login(service, username, password);
+        Result result = loginRepository.login(service, username, password, remember);
         if (result instanceof Result.Success) {
             LoggedInUser data = ((Result.Success<LoggedInUser>) result).getData();
             loginResult.setValue(new LoginResult(new LoggedInUserView(data.getDisplayName())));
         } else {
             loginResult.setValue(new LoginResult(R.string.login_failed));
+            Log.i("TLS13 loginViewModel", "Login failed with "+((Result.Error)result).getError().getMessage());
         }
     }
 

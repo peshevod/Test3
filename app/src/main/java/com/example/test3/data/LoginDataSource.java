@@ -13,33 +13,37 @@ import com.example.test3.data.model.LoggedInUser;
  * Class that handles authentication w/ login credentials and retrieves user information.
  */
 public class LoginDataSource {
+
     private SHConnectionService service;
-    private LoggedInUser loggedInUser;
-    private Exception error;
-    private boolean success=false;
+    private Result result;
+
     public LoginDataSource(SHConnectionService service)
     {
         this.service=service;
+        result=null;
     }
 
-    public Result<LoggedInUser> login(String username, String password) {
-
+    public Result login(String username, String password)
+    {
         Log.i("TLS13","Datasource login");
         service.login(new SHConnection(service) {
             @Override
             public void onLoginSuccess(String welcome) {
-                loggedInUser = new LoggedInUser(username, welcome);
-                success=true;
+                result = new Result.Success<LoggedInUser>(new LoggedInUser(username, welcome));
             }
 
             @Override
-            public void onLoginFailure(Exception error1) {
-                error=error1;
-                success=false;
+            public void onLoginFailure(Exception error) {
+                result = new Result.Error(error);
             }
         },username,password);
-        if(success) return new Result.Success<>(loggedInUser);
-        else return new Result.Error(error);
+        try {
+            while (result == null) Thread.sleep(100);
+        } catch (InterruptedException e){
+            result = new Result.Error(e);
+        }
+        Log.i("TLS13 LoginDataSouce","result="+result.toString());
+        return result;
     }
 
     public void logout() {

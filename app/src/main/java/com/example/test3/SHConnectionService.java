@@ -42,6 +42,11 @@ public class SHConnectionService extends Service {
 
     public MutableLiveData<Boolean> requestCompleted = new MutableLiveData<>();
 
+    public String getHostname()
+    {
+        return hostname;
+    }
+
     public void connect(String hostname, int port) {
         this.hostname=hostname;
         this.port=port;
