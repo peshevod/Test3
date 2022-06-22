@@ -38,7 +38,7 @@ public class LoginDataSource {
             }
         },username,password);
         try {
-            while (result == null) Thread.sleep(100);
+            while (result == null) Thread.sleep(3000);
         } catch (InterruptedException e){
             result = new Result.Error(e);
         }

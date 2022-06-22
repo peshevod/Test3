@@ -81,7 +81,16 @@ public class LoginRepository {
         Log.i("TLS13","LoginRepository login");
         String encryption=service.main.sharedPreferences.getString(username+"@"+service.getHostname(),null);
         if(encryption!=null) {
-            if (rememberCredentials) password_old = decrypt(service, username, encryption);
+            if (rememberCredentials)
+            {
+                String decryption=decrypt(encryption);
+                if(decryption!=null) {
+                    int i1 = decryption.indexOf(':');
+                    int i2 = decryption.indexOf('@');
+                    if (i1 != -1 && i2 != -1 && i2 > i1 && decryption.substring(0, i1).equalsIgnoreCase(username) && decryption.substring(i2 + 1).equalsIgnoreCase(service.getHostname()))
+                        password_old = decryption.substring(i1 + 1, i2);
+                }
+            }
             else {
                 SharedPreferences.Editor ed1 = service.main.sharedPreferences.edit();
                 ed1.remove(username + "@" + service.getHostname());
@@ -98,7 +107,11 @@ public class LoginRepository {
             setLoggedInUser(((Result.Success<LoggedInUser>) result).getData());
             if( rememberCredentials && (password_old==null || !password1.equals(password_old)) )
             {
-                encrypt(service, username, password1);
+                String new_encryption=encrypt(username+":"+password1+"@"+service.getHostname());
+                SharedPreferences.Editor ed2=service.main.sharedPreferences.edit();
+                ed2.putString(username+"@"+service.getHostname(),new_encryption);
+                ed2.putString("last_user@"+service.getHostname(),username);
+                ed2.commit();
             }
         }
         return result;
@@ -107,10 +120,9 @@ public class LoginRepository {
 
 
 
-    private boolean encrypt(SHConnectionService service, String username, String password)
+    private String encrypt(String tocrypt)
     {
-        String encryption;
-        String tocrypt=username+":"+password+"@"+service.getHostname();
+        String encryption=null;
         final SecretKey secretKey=getKey("credentials_key_alias");
         if(secretKey!=null)
         {
@@ -120,28 +132,23 @@ public class LoginRepository {
                 cipher.init(Cipher.ENCRYPT_MODE, secretKey);
                 String iv = new String(Base64.encodeToString(cipher.getIV(),Base64.DEFAULT));
                 encryption = new String(Base64.encodeToString(cipher.doFinal(tocrypt.getBytes("windows-1251")),Base64.DEFAULT))+","+iv;
-                SharedPreferences.Editor ed1=service.main.sharedPreferences.edit();
-                ed1.putString(username+"@"+service.getHostname(),encryption);
-                ed1.putString("last_user@"+service.getHostname(),username);
-                ed1.commit();
             } catch (NoSuchAlgorithmException | NoSuchPaddingException | InvalidKeyException | BadPaddingException | UnsupportedEncodingException | IllegalBlockSizeException e) {
                 Log.e("TLS13", "Encryption error " + e.getMessage());
-                return false;
             }
-            Log.i("TLS13","Encrypted to "+username+"@"+service.getHostname()+" encrypted="+encryption);
-            return true;
+            Log.i("TLS13","Encrypted to "+encryption);
+            return encryption;
         }
-        return false;
+        return null;
 
     }
 
-    private String decrypt(SHConnectionService service, String username, String encrString)
+    private String decrypt(String encrString)
     {
 
         SecretKey secretKey=getKey("credentials_key_alias");
         if(secretKey==null) return null;
         final Cipher cipher;
-        String s;
+        String s=null;
         String fields[]=encrString.split(",");
         byte[] encrypted=Base64.decode(fields[0],Base64.DEFAULT);
         try {
@@ -155,15 +162,11 @@ public class LoginRepository {
             Log.i("TLS13","after decrypt cipher init");
             s=new String(cipher.doFinal(encrypted),"UTF-8");
             Log.i("TLS13","after decryption");
-            int i1=s.indexOf(':');
-            int i2=s.indexOf('@');
-            if(i1!=-1 && i2!=-1 && i2>i1 && s.substring(0,i1).equalsIgnoreCase(username) && s.substring(i2+1).equalsIgnoreCase(service.getHostname()))
-                return s.substring(i1+1,i2);
+            return s;
         } catch (NoSuchAlgorithmException | NoSuchPaddingException | InvalidKeyException | BadPaddingException | IllegalBlockSizeException | UnsupportedEncodingException | InvalidAlgorithmParameterException e) {
             Log.e("TLS13","Decrypt error "+e.getClass().toString()+" "+e.getMessage());
-            return null;
         }
-        Log.e("TLS13","Error in decryption string "+s);
+        Log.e("TLS13","Error in decryption string "+encrString);
         return null;
     }
 

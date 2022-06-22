@@ -72,6 +72,8 @@ public class LoginFragment extends Fragment {
     CheckBox remember;
     EditText usernameEditText;
     EditText passwordEditText;
+    ProgressBar loadingProgressBar;
+    Button loginButton;
     private String TAG="TLS13 LoginFragment";
 
 
@@ -121,8 +123,9 @@ public class LoginFragment extends Fragment {
 //        main.loginViewModel=loginViewModel;
 //        sharedPreferences= PreferenceManager.getDefaultSharedPreferences(getActivity());
         remember = binding.CheckBox;
-        final Button loginButton = binding.login;
-        final ProgressBar loadingProgressBar = binding.loading;
+        loginButton = binding.login;
+        loadingProgressBar = binding.loading;
+        loadingProgressBar.setVisibility(View.INVISIBLE);
         usernameEditText = binding.username;
         if(main.sharedPreferences.contains("last_user@"+main.shConnectionService.getHostname()))
             usernameEditText.setText(main.sharedPreferences.getString("last_user@"+main.shConnectionService.getHostname(),""));
@@ -155,6 +158,7 @@ public class LoginFragment extends Fragment {
                     return;
                 }
                 loadingProgressBar.setVisibility(View.GONE);
+                Log.i(TAG,"Stop progress bar");
                 if (loginResult.getError() != null) {
                     showLoginFailed(loginResult.getError());
                 }
@@ -212,6 +216,7 @@ public class LoginFragment extends Fragment {
             @Override
             public void onClick(View v) {
                 loadingProgressBar.setVisibility(View.VISIBLE);
+                Log.i(TAG,"Start progress bar");
                 loginViewModel.login(main.shConnectionService, usernameEditText.getText().toString(),
                         passwordEditText.getText().toString(),remember.isChecked());
             }
