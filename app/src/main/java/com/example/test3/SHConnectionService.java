@@ -7,14 +7,14 @@ import android.os.IBinder;
 
 import androidx.lifecycle.MutableLiveData;
 
+import com.example.test3.data.Result;
+
 import org.apache.hc.client5.http.HttpRoute;
 import org.apache.hc.client5.http.io.ConnectionEndpoint;
 import org.apache.hc.client5.http.io.LeaseRequest;
 import org.apache.hc.core5.http.HttpHost;
-import org.apache.hc.core5.http.impl.io.HttpRequestExecutor;
 import org.apache.hc.core5.http.protocol.BasicHttpContext;
 
-import java.util.HashSet;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -41,6 +41,7 @@ public class SHConnectionService extends Service {
     List<MySession> sessions;
 
     public MutableLiveData<Boolean> requestCompleted = new MutableLiveData<>();
+    public MutableLiveData<Result> result = new MutableLiveData<com.example.test3.data.Result>();
 
     public String getHostname()
     {
@@ -66,8 +67,6 @@ public class SHConnectionService extends Service {
     public void login(SHConnection shConnection, String username, String password) {
         this.username=username;
         this.password=password;
-//        requestCompleted.setValue(false);
-//        shConnection=new SHConnection(this);
         cmd=SHConnection.CMD_LOGIN;
         pool.execute(shConnection);
     }

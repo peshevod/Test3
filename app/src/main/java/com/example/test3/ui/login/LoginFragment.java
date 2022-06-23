@@ -35,6 +35,7 @@ import com.example.test3.MainActivity;
 import com.example.test3.MyItemRecyclerViewAdapter;
 import com.example.test3.data.LoginDataSource;
 import com.example.test3.data.LoginRepository;
+import com.example.test3.data.Result;
 import com.example.test3.data.model.LoggedInUser;
 import com.example.test3.databinding.FragmentLoginBinding;
 
@@ -125,6 +126,7 @@ public class LoginFragment extends Fragment {
         remember = binding.CheckBox;
         loginButton = binding.login;
         loadingProgressBar = binding.loading;
+        loadingProgressBar.setEnabled(true);
         loadingProgressBar.setVisibility(View.INVISIBLE);
         usernameEditText = binding.username;
         if(main.sharedPreferences.contains("last_user@"+main.shConnectionService.getHostname()))
@@ -151,16 +153,33 @@ public class LoginFragment extends Fragment {
             }
         });
 
+        main.shConnectionService.result.observe(getViewLifecycleOwner(), new Observer<Result>() {
+            @Override
+            public void onChanged(@Nullable Result result) {
+                if (result == null) {
+                    return;
+                }
+                if (result instanceof Result.Error) {
+                    loginViewModel.getLoginResult().postValue(new LoginResult(R.string.login_failed));
+                    Log.i("TLS13 loginViewModel", "Login failed with " + ((Result.Error) result).getError().getMessage());
+                }
+                if (result instanceof Result.Success) {
+                    LoggedInUser data = ((Result.Success<LoggedInUser>) result).getData();
+                    loginViewModel.getLoginResult().postValue(new LoginResult(new LoggedInUserView(data.getDisplayName())));
+                }
+            }
+        });
+
         loginViewModel.getLoginResult().observe(getViewLifecycleOwner(), new Observer<LoginResult>() {
             @Override
             public void onChanged(@Nullable LoginResult loginResult) {
                 if (loginResult == null) {
                     return;
                 }
-                loadingProgressBar.setVisibility(View.GONE);
                 Log.i(TAG,"Stop progress bar");
                 if (loginResult.getError() != null) {
                     showLoginFailed(loginResult.getError());
+                    loadingProgressBar.setVisibility(View.GONE);
                 }
                 if (loginResult.getSuccess() != null) {
                     updateUiWithUser(loginResult.getSuccess());
@@ -168,10 +187,12 @@ public class LoginFragment extends Fragment {
                     main.shConnectionService.requestCompleted.observeForever(new Observer<Boolean>() {
                         @Override
                         public void onChanged(@Nullable Boolean b) {
+                            loadingProgressBar.setVisibility(View.GONE);
                             if(b)
                             {
                                 Log.i(TAG,"Request completed");
                                 Log.i(TAG,"Navigate to Devices");
+                                if(remember.isChecked()) LoginRepository.writeCredentials();
                                 Navigation.findNavController(main, R.id.nav_host_fragment_content_main).navigate(R.id.action_login_fragment_to_devicesFragment);
                                 main.shConnectionService.requestCompleted.removeObserver(this);
                             } else Log.i(TAG,"Request started");

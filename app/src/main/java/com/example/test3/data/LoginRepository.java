@@ -38,7 +38,10 @@ import javax.crypto.spec.IvParameterSpec;
 public class LoginRepository {
 
     private static volatile LoginRepository instance;
-
+    static String password1=null;
+    static String password_old=null;
+    static SHConnectionService service;
+    static String username;
 
     private LoginDataSource dataSource;
 
@@ -74,10 +77,12 @@ public class LoginRepository {
         // @see https://developer.android.com/training/articles/keystore
     }
 
-    public Result login(SHConnectionService service, String username, String password, boolean rememberCredentials) {
+    public void login(SHConnectionService service, String username, String password, boolean rememberCredentials) {
         // handle login
-        String password1=null;
-        String password_old=null;
+        password1=null;
+        password_old=null;
+        LoginRepository.service=service;
+        LoginRepository.username=username;
         Log.i("TLS13","LoginRepository login");
         String encryption=service.main.sharedPreferences.getString(username+"@"+service.getHostname(),null);
         if(encryption!=null) {
@@ -100,27 +105,30 @@ public class LoginRepository {
         if(password==null || password.equals("::::::::"))
         {
             if(password_old!=null) password1=password_old;
-            else return new Result.Error(new Exception("Password not set"));
-        } else password1=password;
-        Result result = dataSource.login(username, password1);
-        if (result instanceof Result.Success) {
-            setLoggedInUser(((Result.Success<LoggedInUser>) result).getData());
-            if( rememberCredentials && (password_old==null || !password1.equals(password_old)) )
+            else
             {
-                String new_encryption=encrypt(username+":"+password1+"@"+service.getHostname());
-                SharedPreferences.Editor ed2=service.main.sharedPreferences.edit();
-                ed2.putString(username+"@"+service.getHostname(),new_encryption);
-                ed2.putString("last_user@"+service.getHostname(),username);
-                ed2.commit();
+                service.result.setValue(new Result.Error(new Exception("Password not set")));
+                return;
             }
+        } else password1=password;
+        dataSource.login(username, password1);
+        return;
+    }
+
+    public static void writeCredentials()
+    {
+        if( password_old==null || !password1.equals(password_old) )
+        {
+            String new_encryption=encrypt(username+":"+password1+"@"+service.getHostname());
+            SharedPreferences.Editor ed2=service.main.sharedPreferences.edit();
+            ed2.putString(username+"@"+service.getHostname(),new_encryption);
+            ed2.putString("last_user@"+service.getHostname(),username);
+            ed2.commit();
         }
-        return result;
     }
 
 
-
-
-    private String encrypt(String tocrypt)
+    private static String encrypt(String tocrypt)
     {
         String encryption=null;
         final SecretKey secretKey=getKey("credentials_key_alias");
@@ -142,7 +150,7 @@ public class LoginRepository {
 
     }
 
-    private String decrypt(String encrString)
+    private static String decrypt(String encrString)
     {
 
         SecretKey secretKey=getKey("credentials_key_alias");
@@ -172,7 +180,7 @@ public class LoginRepository {
 
 
 
-    private SecretKey getKey(String alias)
+    private static SecretKey getKey(String alias)
     {
         KeyStore keyStore = null;
         try {

@@ -1,11 +1,15 @@
 package com.example.test3.ui.login;
 
+import androidx.annotation.Nullable;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
+import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModel;
+import androidx.navigation.Navigation;
 
 import android.util.Log;
 import android.util.Patterns;
+import android.view.View;
 
 import com.example.test3.MainActivity;
 import com.example.test3.SHConnectionService;
@@ -35,14 +39,7 @@ public class LoginViewModel extends ViewModel {
 
     public void login(SHConnectionService service, String username, String password, boolean remember) {
         // can be launched in a separate asynchronous job
-        Result result = loginRepository.login(service, username, password, remember);
-        if (result instanceof Result.Success) {
-            LoggedInUser data = ((Result.Success<LoggedInUser>) result).getData();
-            loginResult.setValue(new LoginResult(new LoggedInUserView(data.getDisplayName())));
-        } else {
-            loginResult.setValue(new LoginResult(R.string.login_failed));
-            Log.i("TLS13 loginViewModel", "Login failed with "+((Result.Error)result).getError().getMessage());
-        }
+        loginRepository.login(service, username, password, remember);
     }
 
     public void loginDataChanged(String username, String password) {
