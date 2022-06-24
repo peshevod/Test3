@@ -24,21 +24,12 @@ public class LoginDataSource {
     {
         this.service=service;
     }
+    public SHConnectionService getService() {return  service; }
 
     public void login(String username, String password)
     {
         Log.i("TLS13","Datasource login");
-        service.login(new SHConnection(service) {
-            @Override
-            public void onLoginSuccess(String welcome) {
-                service.result.postValue(new Success<LoggedInUser>(new LoggedInUser(username, welcome)));
-            }
-
-            @Override
-            public void onLoginFailure(Exception error) {
-                service.result.postValue(new Result.Error(error));
-            }
-        },username,password);
+        service.login(username,password);
     }
 
     public void logout() {

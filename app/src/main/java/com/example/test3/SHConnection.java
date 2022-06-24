@@ -4,6 +4,7 @@ import android.util.Base64;
 import android.util.JsonReader;
 import android.util.Log;
 
+import com.example.test3.data.Result;
 import com.example.test3.data.model.LoggedInUser;
 import com.example.test3.ui.login.LoginResult;
 
@@ -35,19 +36,21 @@ public class SHConnection implements Runnable
     public final static int CMD_LOGIN=2;
     public final static int CMD_DEVICES=3;
     public final static int CMD_SESSIONS=4;
+    int cmd;
     String TAG="TLS13 SHConnection";
     SHConnectionService service;
 
-    public SHConnection(SHConnectionService service)
+    public SHConnection(SHConnectionService service, int cmd)
     {
         this.service=service;
+        this.cmd=cmd;
     }
 
-    public void onLoginSuccess(String welcome){}
+/*    public void onLoginSuccess(String welcome){}
 
     public void onLoginFailure(Exception error){}
 
-    public void onLoginStart(){}
+    public void onLoginStart(){}*/
 
     public void login()
     {
@@ -79,12 +82,19 @@ public class SHConnection implements Runnable
                     }
                     reader.endObject();
                 }
-                onLoginSuccess(welcome);
+//                onLoginSuccess(welcome);
+                service.result.postValue(new Result.Success<LoggedInUser>(new LoggedInUser(service.getHostname(), service.username, service.password, welcome)));
                 Log.i(TAG, service.username + " " + welcome);
+            }
+            else
+            {
+                service.result.postValue(new Result.Error(new Exception(""+code+"("+response1.getReasonPhrase()+")")));
+                Log.i(TAG, "Login Failed "+response1.getReasonPhrase() + " " + code);
             }
         }
         catch (IOException e) {
-            onLoginFailure(e);
+//            onLoginFailure(e);
+            service.result.postValue(new Result.Error(e));
             Log.i(TAG,e.getMessage());
         }
         postToken(true);
@@ -239,14 +249,14 @@ public class SHConnection implements Runnable
     public void run() {
         Log.i(TAG,"Thread id="+Thread.currentThread().getId());
         
-        switch (service.cmd) {
+        switch (cmd) {
             case CMD_CONNECT:
                 service.httpHost= new HttpHost("https",service.hostname,service.port);
                 service.httpRoute= new HttpRoute(RoutingSupport.normalize(service.httpHost, DefaultSchemePortResolver.INSTANCE),null,true);
                 if(service.connectionEndpoint!=null && service.connectionEndpoint.isConnected())
                 {
                     Log.i(TAG, "Already connected");
-                    service.main.connected=true;
+                    service.main.connection_state.setValue(MainActivity.CONNECTED);
                     break;
                 }
                 service.id++;
@@ -255,23 +265,23 @@ public class SHConnection implements Runnable
                     try {
                         service.connectionEndpoint = service.leaseRequest.get(Timeout.ofSeconds(1));
                         service.shConnectionClient.connMgr.connect(service.connectionEndpoint, TimeValue.ofSeconds(5), service.basicHttpContext);
-                        service.main.connected=true;
+                        service.main.connection_state.postValue(MainActivity.CONNECTED);
                     } catch (InterruptedException | ExecutionException | TimeoutException | IOException e) {
                         Log.e(TAG, e.getMessage());
-                        service.main.connected = false;
+                        service.main.connection_state.postValue(MainActivity.NOT_CONNECTED);
                     }
                 }
                 else
                 {
                     Log.i(TAG,"leaseRequest=null");
-                    service.main.connected = false;
+                    service.main.connection_state.postValue(MainActivity.NOT_CONNECTED);
                 }
                 service.shConnectionClient.connMgr.release(service.connectionEndpoint, null, TimeValue.ofSeconds(900));
                 break;
             case CMD_DISCONNECT:
                 service.connectionEndpoint.close(CloseMode.GRACEFUL);
                 service.shConnectionClient.connMgr.release(service.connectionEndpoint, null, TimeValue.ofSeconds(0));
-                service.main.connected = false;
+                service.main.connection_state.postValue(MainActivity.NOT_CONNECTED);
                 break;
             case CMD_LOGIN:
                 login();
@@ -283,12 +293,15 @@ public class SHConnection implements Runnable
                 getDevices();
                 break;
         }
-        if(service.main.connected)
+        if(service.main.connection_state.getValue()==MainActivity.CONNECTED)
         {
-            service.main.login_state=MainActivity.BASIC_LOGIN_REQUIRED;
+            service.main.homeViewModel.postConnected(true);
             Log.i(TAG,"Connected!");
         }
-        else Log.e(TAG, "Not connected");
-        service.main.homeViewModel.postConnected(service.main.connected);
+        else if(service.main.connection_state.getValue()==MainActivity.NOT_CONNECTED)
+        {
+            Log.e(TAG, "Not connected");
+            service.main.homeViewModel.postConnected(false);
+        }
     }
 }

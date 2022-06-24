@@ -26,6 +26,8 @@ import com.google.android.material.navigation.NavigationView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.lifecycle.MutableLiveData;
+import androidx.lifecycle.Observer;
 import androidx.navigation.NavController;
 import androidx.navigation.NavDestination;
 import androidx.navigation.Navigation;
@@ -82,22 +84,23 @@ public class MainActivity extends AppCompatActivity implements PreferenceFragmen
     private AppBarConfiguration mAppBarConfiguration;
     private ActivityMainBinding binding;
     private NavHeaderMainBinding navbind;
-    public boolean connected;
+//    public boolean connected;
     public SharedPreferences sharedPreferences;
     private ProgressBar spinner;
     public SSLContext ctx=null;
     public MainActivity main;
-     final String TAG="TLS13";
+     final String TAG="TLS13 MainActivity";
     public HomeViewModel homeViewModel;
     public LoginViewModel loginViewModel;
     public final static int NOT_CONNECTED=0;
-    public final static int CONNECT_REQUIRED=1;
-    public final static int BASIC_LOGIN_REQUIRED=2;
-    public final static int LOGGED_IN=3;
+    public final static int CONNECTED=1;
+    public final static int LOGGED_IN=2;
 
-    public int login_state=NOT_CONNECTED;
+//    public int login_state=NOT_CONNECTED;
     ExecutorService pool;
     public String token;
+
+    public MutableLiveData<Integer> connection_state=new MutableLiveData<Integer>(NOT_CONNECTED);
 
     public MainActivity()
     {
@@ -109,9 +112,10 @@ public class MainActivity extends AppCompatActivity implements PreferenceFragmen
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
+        Log.i(TAG,"connection_state="+connection_state.toString());
         binding = ActivityMainBinding.inflate(getLayoutInflater());
+        connection_state.setValue(NOT_CONNECTED);
         setContentView(binding.getRoot());
-        connected=false;
         setSupportActionBar(binding.appBarMain.toolbar);
         binding.appBarMain.fab.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -261,7 +265,6 @@ public class MainActivity extends AppCompatActivity implements PreferenceFragmen
 //        bindService(asyncIntent, serviceAsyncConnection, Context.BIND_AUTO_CREATE);
         Intent Intent = new Intent(this, SHConnectionService.class);
         bindService(Intent, serviceConnection, Context.BIND_AUTO_CREATE);
-        login_state=MainActivity.CONNECT_REQUIRED;
     }
 
     @Override

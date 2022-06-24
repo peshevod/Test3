@@ -39,19 +39,21 @@ public class HomeFragment extends Fragment {
     String hostname;
     String my_server;
     int port;
+    final String TAG="TLS13 HomeFragment";
 
 
     void setServerTitle()
     {
-        String conn= homeViewModel.getConnected().getValue() ? " - connected" : " - not connected";
+        String conn= main.connection_state.getValue()!=MainActivity.NOT_CONNECTED ? " - connected" : " - not connected";
         Spannable ss = new SpannableString(my_server+conn);
         ss.setSpan(new ForegroundColorSpan(Color.WHITE), 0, my_server.length(), Spannable.SPAN_INCLUSIVE_INCLUSIVE);
-        ss.setSpan(new ForegroundColorSpan( homeViewModel.getConnected().getValue()  ? Color.GREEN : Color.RED), my_server.length(), conn.length()+my_server.length(), Spannable.SPAN_INCLUSIVE_INCLUSIVE);
+        ss.setSpan(new ForegroundColorSpan( main.connection_state.getValue()!=MainActivity.NOT_CONNECTED  ? Color.GREEN : Color.RED), my_server.length(), conn.length()+my_server.length(), Spannable.SPAN_INCLUSIVE_INCLUSIVE);
         main.getSupportActionBar().setTitle(ss);
     }
 
     public View onCreateView(@NonNull LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
+        main=(MainActivity)getActivity();
         homeViewModel =
                 new ViewModelProvider(this).get(HomeViewModel.class);
 
@@ -67,7 +69,7 @@ public class HomeFragment extends Fragment {
                 PreferenceManager.getDefaultSharedPreferences(this.getActivity()/* Activity context */);
 
         my_server=sharedPreferences.getString("selected_server", "Server not selected");
-        Log.i("TLS13","My Server="+my_server);
+        Log.i(TAG,"My Server="+my_server);
         hostname=sharedPreferences.getString(my_server+"@server_url", "mm304.asuscomm.com");
         port=Integer.parseInt(sharedPreferences.getString(my_server+"@server_port", "51443"));
 //        port=51443;
@@ -132,7 +134,7 @@ public class HomeFragment extends Fragment {
                         main.shConnectionService.disconnect();
                     }
 
-                    Log.i("TLS13","connected settings");
+                    Log.i(TAG,"connected settings");
 //                    btn.setText(connected ? "Disconnect":"Connect");
 
 //                    homeViewModel.setProgressBar1(false);
@@ -172,20 +174,24 @@ public class HomeFragment extends Fragment {
 
             }
         });
-        homeViewModel.getConnected().observe(getViewLifecycleOwner(), new Observer<Boolean>() {
+        Log.i(TAG,"main.connection_state="+main.connection_state.toString());
+        main.connection_state.observe(getViewLifecycleOwner(), new Observer<Integer>() {
             @Override
-            public void onChanged(@Nullable Boolean b) {
-                if(!b) main.login_state=MainActivity.CONNECT_REQUIRED;
-                Log.i("TLS13","Connected changes "+b+" login_state="+main.login_state);
-                btn.setText(b.booleanValue() ? "Disconnect" : "Connect");
-                setServerTitle();
-                progressBar1.setVisibility(View.GONE);
-                if(b && (main.login_state==MainActivity.BASIC_LOGIN_REQUIRED))
-                {
-                    Log.i("TLS13","Navigate to login");
+            public void onChanged(@Nullable Integer conn_state) {
+                if(conn_state==MainActivity.CONNECTED || conn_state==MainActivity.LOGGED_IN ) {
+                    Log.i(TAG, "Connected to server");
+                    btn.setText("Disconnect");
+                    setServerTitle();
+                    progressBar1.setVisibility(View.GONE);
+                    Log.i(TAG, "Navigate to login");
                     Navigation.findNavController(main, R.id.nav_host_fragment_content_main).navigate(R.id.action_nav_home_to_login_fragment);
                 }
-//                btn.refreshDrawableState();
+                else if(conn_state==MainActivity.NOT_CONNECTED)
+                {
+                    btn.setText("Connect");
+                    setServerTitle();
+                }
+
             }
         });
         return root;

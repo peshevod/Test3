@@ -129,6 +129,7 @@ public class LoginFragment extends Fragment {
         loadingProgressBar.setEnabled(true);
         loadingProgressBar.setVisibility(View.INVISIBLE);
         usernameEditText = binding.username;
+        Log.i(TAG,"main.shConnectionService="+main.shConnectionService);
         if(main.sharedPreferences.contains("last_user@"+main.shConnectionService.getHostname()))
             usernameEditText.setText(main.sharedPreferences.getString("last_user@"+main.shConnectionService.getHostname(),""));
         passwordEditText = binding.password;
@@ -166,6 +167,8 @@ public class LoginFragment extends Fragment {
                 if (result instanceof Result.Success) {
                     LoggedInUser data = ((Result.Success<LoggedInUser>) result).getData();
                     loginViewModel.getLoginResult().postValue(new LoginResult(new LoggedInUserView(data.getDisplayName())));
+                    if(remember.isChecked()) loginViewModel.getLoginRepository().storeCredentials(data);
+                    main.connection_state.postValue(MainActivity.LOGGED_IN);
                 }
             }
         });
@@ -192,7 +195,6 @@ public class LoginFragment extends Fragment {
                             {
                                 Log.i(TAG,"Request completed");
                                 Log.i(TAG,"Navigate to Devices");
-                                if(remember.isChecked()) LoginRepository.writeCredentials();
                                 Navigation.findNavController(main, R.id.nav_host_fragment_content_main).navigate(R.id.action_login_fragment_to_devicesFragment);
                                 main.shConnectionService.requestCompleted.removeObserver(this);
                             } else Log.i(TAG,"Request started");

@@ -38,18 +38,11 @@ import javax.crypto.spec.IvParameterSpec;
 public class LoginRepository {
 
     private static volatile LoginRepository instance;
-    static String password1=null;
-    static String password_old=null;
-    static SHConnectionService service;
-    static String username;
 
     private LoginDataSource dataSource;
 
-    // If user credentials will be cached in local storage, it is recommended it be encrypted
-    // @see https://developer.android.com/training/articles/keystore
     private LoggedInUser user = null;
 
-    // private constructor : singleton access
     private LoginRepository(LoginDataSource dataSource)
     {
         this.dataSource = dataSource;
@@ -73,34 +66,34 @@ public class LoginRepository {
 
     public void setLoggedInUser(LoggedInUser user) {
         this.user = user;
-        // If user credentials will be cached in local storage, it is recommended it be encrypted
-        // @see https://developer.android.com/training/articles/keystore
+    }
+
+    private String getPassFromStore(SHConnectionService service, String username)
+    {
+        String encryption = service.main.sharedPreferences.getString(username + "@" + service.getHostname(), null);
+        if (encryption != null) {
+            String decryption = decrypt(encryption);
+            if (decryption != null) {
+                int i1 = decryption.indexOf(':');
+                int i2 = decryption.indexOf('@');
+                if (i1 != -1 && i2 != -1 && i2 > i1 && decryption.substring(0, i1).equalsIgnoreCase(username) && decryption.substring(i2 + 1).equalsIgnoreCase(service.getHostname()))
+                    return decryption.substring(i1 + 1, i2);
+            }
+        }
+        return null;
     }
 
     public void login(SHConnectionService service, String username, String password, boolean rememberCredentials) {
         // handle login
-        password1=null;
-        password_old=null;
-        LoginRepository.service=service;
-        LoginRepository.username=username;
+        String password1=null;
+        String password_old=null;
         Log.i("TLS13","LoginRepository login");
-        String encryption=service.main.sharedPreferences.getString(username+"@"+service.getHostname(),null);
-        if(encryption!=null) {
-            if (rememberCredentials)
-            {
-                String decryption=decrypt(encryption);
-                if(decryption!=null) {
-                    int i1 = decryption.indexOf(':');
-                    int i2 = decryption.indexOf('@');
-                    if (i1 != -1 && i2 != -1 && i2 > i1 && decryption.substring(0, i1).equalsIgnoreCase(username) && decryption.substring(i2 + 1).equalsIgnoreCase(service.getHostname()))
-                        password_old = decryption.substring(i1 + 1, i2);
-                }
-            }
-            else {
-                SharedPreferences.Editor ed1 = service.main.sharedPreferences.edit();
-                ed1.remove(username + "@" + service.getHostname());
-                ed1.commit();
-            }
+        if (rememberCredentials) password_old=getPassFromStore(service,username);
+        else
+        {
+            SharedPreferences.Editor ed1 = service.main.sharedPreferences.edit();
+            ed1.remove(username + "@" + service.getHostname());
+            ed1.commit();
         }
         if(password==null || password.equals("::::::::"))
         {
@@ -112,17 +105,17 @@ public class LoginRepository {
             }
         } else password1=password;
         dataSource.login(username, password1);
-        return;
     }
 
-    public static void writeCredentials()
+    public void storeCredentials(LoggedInUser loggedInUser)
     {
-        if( password_old==null || !password1.equals(password_old) )
+        String password_old=getPassFromStore(dataSource.getService(),loggedInUser.getUserName());
+        if( password_old==null || !loggedInUser.getPassword().equals(password_old) )
         {
-            String new_encryption=encrypt(username+":"+password1+"@"+service.getHostname());
-            SharedPreferences.Editor ed2=service.main.sharedPreferences.edit();
-            ed2.putString(username+"@"+service.getHostname(),new_encryption);
-            ed2.putString("last_user@"+service.getHostname(),username);
+            String new_encryption=encrypt(loggedInUser.getUserName()+":"+loggedInUser.getPassword()+"@"+dataSource.getService().getHostname());
+            SharedPreferences.Editor ed2=dataSource.getService().main.sharedPreferences.edit();
+            ed2.putString(loggedInUser.getUserName()+"@"+dataSource.getService().getHostname(),new_encryption);
+            ed2.putString("last_user@"+dataSource.getService().getHostname(),loggedInUser.getUserName());
             ed2.commit();
         }
     }

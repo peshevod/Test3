@@ -4,8 +4,14 @@ import android.app.Service;
 import android.content.Intent;
 import android.os.Binder;
 import android.os.IBinder;
+import android.util.Log;
+import android.view.View;
 
+import androidx.annotation.Nullable;
+import androidx.lifecycle.LifecycleOwner;
 import androidx.lifecycle.MutableLiveData;
+import androidx.lifecycle.Observer;
+import androidx.navigation.Navigation;
 
 import com.example.test3.data.Result;
 
@@ -31,7 +37,6 @@ public class SHConnectionService extends Service {
     String hostname;
     String username, password;
     int port;
-    int cmd;
     private final IBinder binder = new SHConnectionService.SHConnectionIBinder();
     int id;
     HttpHost httpHost;
@@ -39,6 +44,7 @@ public class SHConnectionService extends Service {
     String token;
     List<MyDevice> devices;
     List<MySession> sessions;
+    private final String TAG="TLS13 SHConnectionService";
 
     public MutableLiveData<Boolean> requestCompleted = new MutableLiveData<>();
     public MutableLiveData<Result> result = new MutableLiveData<com.example.test3.data.Result>();
@@ -48,41 +54,36 @@ public class SHConnectionService extends Service {
         return hostname;
     }
 
-    public void connect(String hostname, int port) {
+    public void connect(String hostname, int port)
+    {
         this.hostname=hostname;
         this.port=port;
-//        this.hostname="www.blacktyres.ru";
-//        this.port=443;
-        shConnection=new SHConnection(this);
-        cmd=SHConnection.CMD_CONNECT;
+        SHConnection shConnection=new SHConnection(this,SHConnection.CMD_CONNECT);
         pool.execute(shConnection);
     }
 
     public void disconnect()
     {
-        cmd=SHConnection.CMD_DISCONNECT;
-        shConnection=new SHConnection(this);
+        SHConnection shConnection=new SHConnection(this,SHConnection.CMD_DISCONNECT);
         pool.execute(shConnection);
     }
-    public void login(SHConnection shConnection, String username, String password) {
+    public void login(String username, String password) {
         this.username=username;
         this.password=password;
-        cmd=SHConnection.CMD_LOGIN;
+        SHConnection shConnection=new SHConnection(this, SHConnection.CMD_LOGIN);
         pool.execute(shConnection);
     }
 
     public List<MyDevice> getDevices() {
-        shConnection=new SHConnection(this);
+        SHConnection shConnection=new SHConnection(this,SHConnection.CMD_DEVICES);
         requestCompleted.postValue(false);
-        cmd=SHConnection.CMD_DEVICES;
         pool.execute(shConnection);
         return devices;
     }
 
     public List<MySession> getSessions() {
-        shConnection=new SHConnection(this);
+        SHConnection shConnection=new SHConnection(this,SHConnection.CMD_SESSIONS);
         requestCompleted.setValue(false);
-        cmd=SHConnection.CMD_SESSIONS;
         pool.execute(shConnection);
         return sessions;
     }
@@ -90,6 +91,8 @@ public class SHConnectionService extends Service {
 
     public SHConnectionService() {
         pool = Executors.newCachedThreadPool();
+        id=1;
+        shConnectionClient=new SHConnectionClient(this);
     }
 
     public class SHConnectionIBinder extends Binder {
@@ -101,8 +104,6 @@ public class SHConnectionService extends Service {
     @Override
     public IBinder onBind(Intent intent) {
         System.setProperty("java.net.preferIPv4Stack" , "true");
-        id=1;
-        shConnectionClient=new SHConnectionClient(this);
         return binder;
 //        throw new UnsupportedOperationException("Not yet implemented");
     }
