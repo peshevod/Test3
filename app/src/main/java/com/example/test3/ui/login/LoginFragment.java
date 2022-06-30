@@ -67,7 +67,7 @@ import javax.crypto.spec.IvParameterSpec;
 
 public class LoginFragment extends Fragment {
 
-    private LoginViewModel loginViewModel;
+//    private LoginViewModel loginViewModel;
     private FragmentLoginBinding binding;
     public MainActivity main;
     CheckBox remember;
@@ -117,10 +117,11 @@ public class LoginFragment extends Fragment {
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
+        Log.i(TAG,"Start OnViewCreated");
 //        loginViewModel = new ViewModelProvider(this, new LoginViewModelFactory())
 //                .get(LoginViewModel.class);
         main=(MainActivity)(this.getActivity());
-        loginViewModel = new LoginViewModel(LoginRepository.getInstance(new LoginDataSource(main.shConnectionService)));
+        if(main.loginViewModel==null) main.loginViewModel = new LoginViewModel(LoginRepository.getInstance(new LoginDataSource(main.shConnectionService)));
 //        main.loginViewModel=loginViewModel;
 //        sharedPreferences= PreferenceManager.getDefaultSharedPreferences(getActivity());
         remember = binding.CheckBox;
@@ -129,16 +130,27 @@ public class LoginFragment extends Fragment {
         loadingProgressBar.setEnabled(true);
         loadingProgressBar.setVisibility(View.INVISIBLE);
         usernameEditText = binding.username;
+        passwordEditText = binding.password;
         Log.i(TAG,"main.shConnectionService="+main.shConnectionService);
         if(main.sharedPreferences.contains("last_user@"+main.shConnectionService.getHostname()))
             usernameEditText.setText(main.sharedPreferences.getString("last_user@"+main.shConnectionService.getHostname(),""));
-        passwordEditText = binding.password;
-        if(main.sharedPreferences.contains(usernameEditText.getText().toString()+"@"+main.shConnectionService.getHostname())) {
-            passwordEditText.setText("::::::::");
-            loginButton.setEnabled(true);
+        if(main.connection_state.getValue()==MainActivity.CONNECTED) {
+            loginButton.setText("Sign In");
+            passwordEditText.setVisibility(View.VISIBLE);
+            remember.setVisibility(View.VISIBLE);
+            if (main.sharedPreferences.contains(usernameEditText.getText().toString() + "@" + main.shConnectionService.getHostname())) {
+                passwordEditText.setText("::::::::");
+                loginButton.setEnabled(true);
+            }
+        } else if(main.connection_state.getValue()==MainActivity.LOGGED_IN)
+        {
+            passwordEditText.setVisibility(View.INVISIBLE);
+            remember.setVisibility(View.INVISIBLE);
+            loginButton.setText("Sign Out");
+            Log.i(TAG, "loginResult="+main.loginViewModel.getLoginResult()==null ? "null":main.loginViewModel.getLoginResult().toString());
         }
 
-        loginViewModel.getLoginFormState().observe(getViewLifecycleOwner(), new Observer<LoginFormState>() {
+        main.loginViewModel.getLoginFormState().observe(getViewLifecycleOwner(), new Observer<LoginFormState>() {
             @Override
             public void onChanged(@Nullable LoginFormState loginFormState) {
                 if (loginFormState == null) {
@@ -154,28 +166,32 @@ public class LoginFragment extends Fragment {
             }
         });
 
-        main.shConnectionService.result.observe(getViewLifecycleOwner(), new Observer<Result>() {
+        if(main.shConnectionService.result.getValue() instanceof Result.Error) Log.i(TAG, "result is Error");
+        if(main.shConnectionService.result.getValue() instanceof Result.Success) Log.i(TAG, "result is Success");
+        if(main.connection_state.getValue()!=MainActivity.LOGGED_IN) main.shConnectionService.result.observe(main, new Observer<Result>() {
             @Override
             public void onChanged(@Nullable Result result) {
                 if (result == null) {
                     return;
                 }
+                Log.i(TAG,"Result changed "+result.toString());
                 if (result instanceof Result.Error) {
-                    loginViewModel.getLoginResult().postValue(new LoginResult(R.string.login_failed));
+                    main.loginViewModel.getLoginResult().postValue(new LoginResult(R.string.login_failed));
                     Log.i("TLS13 loginViewModel", "Login failed with " + ((Result.Error) result).getError().getMessage());
                 }
                 if (result instanceof Result.Success) {
                     LoggedInUser data = ((Result.Success<LoggedInUser>) result).getData();
-                    loginViewModel.getLoginResult().postValue(new LoginResult(new LoggedInUserView(data.getDisplayName())));
-                    if(remember.isChecked()) loginViewModel.getLoginRepository().storeCredentials(data);
+                    main.loginViewModel.getLoginResult().postValue(new LoginResult(new LoggedInUserView(data.getDisplayName())));
+                    if(remember.isChecked()) main.loginViewModel.getLoginRepository().storeCredentials(data);
                     main.connection_state.postValue(MainActivity.LOGGED_IN);
                 }
             }
         });
 
-        loginViewModel.getLoginResult().observe(getViewLifecycleOwner(), new Observer<LoginResult>() {
+        if(main.connection_state.getValue()!=MainActivity.LOGGED_IN) main.loginViewModel.getLoginResult().observe(main, new Observer<LoginResult>() {
             @Override
             public void onChanged(@Nullable LoginResult loginResult) {
+                Log.i(TAG,"LoginResult changed");
                 if (loginResult == null) {
                     return;
                 }
@@ -190,7 +206,6 @@ public class LoginFragment extends Fragment {
                     main.shConnectionService.requestCompleted.observeForever(new Observer<Boolean>() {
                         @Override
                         public void onChanged(@Nullable Boolean b) {
-                            loadingProgressBar.setVisibility(View.GONE);
                             if(b)
                             {
                                 Log.i(TAG,"Request completed");
@@ -198,6 +213,7 @@ public class LoginFragment extends Fragment {
                                 Navigation.findNavController(main, R.id.nav_host_fragment_content_main).navigate(R.id.action_login_fragment_to_devicesFragment);
                                 main.shConnectionService.requestCompleted.removeObserver(this);
                             } else Log.i(TAG,"Request started");
+                            loadingProgressBar.setVisibility(View.GONE);
                         }
                     });
                 }
@@ -217,7 +233,7 @@ public class LoginFragment extends Fragment {
 
             @Override
             public void afterTextChanged(Editable s) {
-                loginViewModel.loginDataChanged(usernameEditText.getText().toString(),
+                main.loginViewModel.loginDataChanged(usernameEditText.getText().toString(),
                         passwordEditText.getText().toString());
             }
         };
@@ -228,7 +244,7 @@ public class LoginFragment extends Fragment {
             @Override
             public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
                 if (actionId == EditorInfo.IME_ACTION_DONE) {
-                    loginViewModel.login(main.shConnectionService, usernameEditText.getText().toString(),
+                    main.loginViewModel.login(main.shConnectionService, usernameEditText.getText().toString(),
                             passwordEditText.getText().toString(), remember.isChecked());
                 }
                 return false;
@@ -238,10 +254,20 @@ public class LoginFragment extends Fragment {
         loginButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                loadingProgressBar.setVisibility(View.VISIBLE);
-                Log.i(TAG,"Start progress bar");
-                loginViewModel.login(main.shConnectionService, usernameEditText.getText().toString(),
+                if(main.connection_state.getValue()!=MainActivity.LOGGED_IN)
+                {
+                    loadingProgressBar.setVisibility(View.VISIBLE);
+                    Log.i(TAG,"Start progress bar");
+                    main.loginViewModel.login(main.shConnectionService, usernameEditText.getText().toString(),
                         passwordEditText.getText().toString(),remember.isChecked());
+                } else
+                {
+                    main.loginViewModel.logout();
+                    main.connection_state.postValue(MainActivity.CONNECTED);
+                    main.loginViewModel=null;
+                    main.shConnectionService.result.setValue(null);
+                    Navigation.findNavController(main, R.id.nav_host_fragment_content_main).navigate(R.id.action_login_fragment_self);
+                }
             }
         });
 
@@ -257,7 +283,8 @@ public class LoginFragment extends Fragment {
     }
 
     private void updateUiWithUser(LoggedInUserView model) {
-        String welcome = getString(R.string.welcome) + model.getDisplayName();
+//        String welcome = getString(R.string.welcome) + model.getDisplayName();
+        String welcome = "Welcome " + model.getDisplayName();
         // TODO : initiate successful logged in experience
         if (getContext() != null && getContext().getApplicationContext() != null) {
             Toast.makeText(getContext().getApplicationContext(), welcome, Toast.LENGTH_LONG).show();

@@ -50,8 +50,11 @@
         <action
             android:id="@+id/action_login_fragment_to_devicesFragment"
             app:destination="@id/devicesFragment"
-            app:popUpTo="@id/nav_home"
+            app:popUpTo="@id/login_fragment"
             app:popUpToInclusive="false" />
+        <action
+            android:id="@+id/action_login_fragment_self"
+            app:destination="@id/login_fragment" />
     </fragment>
     <fragment
         android:id="@+id/new_settings_fragment"

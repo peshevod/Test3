@@ -37,6 +37,7 @@ import java.util.List;
 public class DevicesFragment extends Fragment {
     MainActivity main;
     // TODO: Customize parameter argument names
+    ProgressBar progressBar;
     RecyclerView recyclerView;
     MyItemRecyclerViewAdapter myItemRecyclerViewAdapter;
     private static final String ARG_COLUMN_COUNT = "column-count";
@@ -77,6 +78,9 @@ public class DevicesFragment extends Fragment {
         View view = inflater.inflate(R.layout.fragment_devices_list, container, false);
         Toolbar toolbar = (Toolbar) getActivity().findViewById(R.id.toolbar);
         toolbar.setTitle("Devices");
+        Log.i(TAG, "OnCreateView");
+//        progressBar=(ProgressBar) view.findViewById(R.id.progressBar5);
+//        progressBar.setVisibility(View.VISIBLE);
         // Set the adapter
 
         if (view instanceof RecyclerView) {
@@ -96,6 +100,8 @@ public class DevicesFragment extends Fragment {
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
+        Log.i(TAG,"On ViewCreated");
+//        progressBar.setVisibility(View.GONE);
     }
 
     @Override

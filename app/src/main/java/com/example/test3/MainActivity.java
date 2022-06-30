@@ -91,7 +91,7 @@ public class MainActivity extends AppCompatActivity implements PreferenceFragmen
     public MainActivity main;
      final String TAG="TLS13 MainActivity";
     public HomeViewModel homeViewModel;
-    public LoginViewModel loginViewModel;
+    public LoginViewModel loginViewModel=null;
     public final static int NOT_CONNECTED=0;
     public final static int CONNECTED=1;
     public final static int LOGGED_IN=2;

@@ -42,6 +42,11 @@ public class LoginViewModel extends ViewModel {
         loginRepository.login(service, username, password, remember);
     }
 
+    public void logout() {
+        // can be launched in a separate asynchronous job
+        loginRepository.logout();
+    }
+
     public void loginDataChanged(String username, String password) {
         if (!isUserNameValid(username)) {
             loginFormState.setValue(new LoginFormState(R.string.invalid_username, null));
