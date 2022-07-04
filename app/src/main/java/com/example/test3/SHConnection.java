@@ -241,6 +241,7 @@ public class SHConnection implements Runnable
         } catch (IOException e)
         {
             Log.e(TAG, e.getMessage());
+            service.sessions=null;
         }
         service.requestCompleted.postValue(true);
     }

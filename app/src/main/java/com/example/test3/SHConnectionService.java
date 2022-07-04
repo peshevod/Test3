@@ -43,7 +43,7 @@ public class SHConnectionService extends Service {
     HttpRoute httpRoute;
     String token;
     List<MyDevice> devices;
-    List<MySession> sessions;
+    public List<MySession> sessions;
     private final String TAG="TLS13 SHConnectionService";
 
     public MutableLiveData<Boolean> requestCompleted = new MutableLiveData<>();

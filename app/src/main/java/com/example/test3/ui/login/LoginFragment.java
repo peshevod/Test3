@@ -11,11 +11,16 @@ import androidx.preference.PreferenceManager;
 
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.security.keystore.KeyGenParameterSpec;
 import android.security.keystore.KeyProperties;
 import android.text.Editable;
+import android.text.SpannableString;
 import android.text.TextWatcher;
+import android.text.style.BackgroundColorSpan;
+import android.text.style.ForegroundColorSpan;
+import android.text.style.RelativeSizeSpan;
 import android.util.Base64;
 import android.util.Log;
 import android.view.KeyEvent;
@@ -195,9 +200,9 @@ public class LoginFragment extends Fragment {
                 if (loginResult == null) {
                     return;
                 }
-                Log.i(TAG,"Stop progress bar");
                 if (loginResult.getError() != null) {
                     showLoginFailed(loginResult.getError());
+                    Log.i(TAG,"Stop progress bar");
                     loadingProgressBar.setVisibility(View.GONE);
                 }
                 if (loginResult.getSuccess() != null) {
@@ -208,12 +213,29 @@ public class LoginFragment extends Fragment {
                         public void onChanged(@Nullable Boolean b) {
                             if(b)
                             {
+                                Log.i(TAG,"Stop progress bar");
+                                loadingProgressBar.setVisibility(View.GONE);
                                 Log.i(TAG,"Request completed");
-                                Log.i(TAG,"Navigate to Devices");
-                                Navigation.findNavController(main, R.id.nav_host_fragment_content_main).navigate(R.id.action_login_fragment_to_devicesFragment);
+                                if(main.shConnectionService.sessions!=null) {
+                                    Log.i(TAG, "Navigate to Devices");
+                                    Navigation.findNavController(main, R.id.nav_host_fragment_content_main).navigate(R.id.action_login_fragment_to_devicesFragment);
+                                }
+                                else
+                                {
+                                    if (getContext() != null && getContext().getApplicationContext() != null) {
+                                        String s="Error getting data!!!";
+                                        SpannableString sstring=new SpannableString(s);
+                                        sstring.setSpan(new ForegroundColorSpan(Color.RED),0,s.length()-1, SpannableString.SPAN_MARK_POINT);
+                                        sstring.setSpan(new RelativeSizeSpan(2f),0,s.length()-1, SpannableString.SPAN_MARK_POINT);
+                                        Toast.makeText(getContext().getApplicationContext(), sstring, Toast.LENGTH_LONG).show();
+                                        main.connection_state.postValue(MainActivity.CONNECTED);
+                                        main.loginViewModel=null;
+                                        main.shConnectionService.result.setValue(null);
+                                        Navigation.findNavController(main, R.id.nav_host_fragment_content_main).navigate(R.id.action_login_fragment_self);
+                                    }
+                                }
                                 main.shConnectionService.requestCompleted.removeObserver(this);
                             } else Log.i(TAG,"Request started");
-                            loadingProgressBar.setVisibility(View.GONE);
                         }
                     });
                 }
@@ -287,7 +309,12 @@ public class LoginFragment extends Fragment {
         String welcome = "Welcome " + model.getDisplayName();
         // TODO : initiate successful logged in experience
         if (getContext() != null && getContext().getApplicationContext() != null) {
-            Toast.makeText(getContext().getApplicationContext(), welcome, Toast.LENGTH_LONG).show();
+            SpannableString sstring=new SpannableString(welcome);
+            sstring.setSpan(new ForegroundColorSpan(Color.BLACK),0,welcome.length(), SpannableString.SPAN_INCLUSIVE_EXCLUSIVE);
+        //    wstring.setSpan(new BackgroundColorSpan(Color.BLACK),0,welcome.length()-1, SpannableString.SPAN_MARK_POINT);
+            sstring.setSpan(new RelativeSizeSpan(1.5f),0,welcome.length(), SpannableString.SPAN_INCLUSIVE_EXCLUSIVE);
+            Toast toast=Toast.makeText(getContext().getApplicationContext(), sstring, Toast.LENGTH_LONG);
+            toast.show();
         }
     }
 
