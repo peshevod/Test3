@@ -1,27 +1,18 @@
 package com.example.test3.ui.login;
 
 import androidx.lifecycle.Observer;
-import androidx.lifecycle.ViewModelProvider;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.StringRes;
 import androidx.fragment.app.Fragment;
 import androidx.navigation.Navigation;
-import androidx.preference.PreferenceManager;
 
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.os.Bundle;
-import android.security.keystore.KeyGenParameterSpec;
-import android.security.keystore.KeyProperties;
 import android.text.Editable;
-import android.text.SpannableString;
 import android.text.TextWatcher;
-import android.text.style.BackgroundColorSpan;
-import android.text.style.ForegroundColorSpan;
-import android.text.style.RelativeSizeSpan;
-import android.util.Base64;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
@@ -37,7 +28,6 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.test3.MainActivity;
-import com.example.test3.MyItemRecyclerViewAdapter;
 import com.example.test3.data.LoginDataSource;
 import com.example.test3.data.LoginRepository;
 import com.example.test3.data.Result;
@@ -45,30 +35,6 @@ import com.example.test3.data.model.LoggedInUser;
 import com.example.test3.databinding.FragmentLoginBinding;
 
 import com.example.test3.R;
-
-import java.io.IOException;
-import java.io.UnsupportedEncodingException;
-import java.nio.charset.Charset;
-import java.nio.charset.StandardCharsets;
-import java.security.InvalidAlgorithmParameterException;
-import java.security.InvalidKeyException;
-import java.security.KeyStore;
-import java.security.KeyStoreException;
-import java.security.NoSuchAlgorithmException;
-import java.security.NoSuchProviderException;
-import java.security.UnrecoverableEntryException;
-import java.security.cert.CertificateException;
-import java.util.HashSet;
-import java.util.Set;
-
-import javax.crypto.BadPaddingException;
-import javax.crypto.Cipher;
-import javax.crypto.IllegalBlockSizeException;
-import javax.crypto.KeyGenerator;
-import javax.crypto.NoSuchPaddingException;
-import javax.crypto.SecretKey;
-import javax.crypto.spec.GCMParameterSpec;
-import javax.crypto.spec.IvParameterSpec;
 
 public class LoginFragment extends Fragment {
 
@@ -201,12 +167,12 @@ public class LoginFragment extends Fragment {
                     return;
                 }
                 if (loginResult.getError() != null) {
-                    showLoginFailed(loginResult.getError());
+                    showToast("Failed to login "+loginResult.getError(),Color.RED);
                     Log.i(TAG,"Stop progress bar");
                     loadingProgressBar.setVisibility(View.GONE);
                 }
                 if (loginResult.getSuccess() != null) {
-                    updateUiWithUser(loginResult.getSuccess());
+                    showToast("Welcome "+loginResult.getSuccess().getDisplayName(),-1);
                     main.shConnectionService.getSessions();
                     main.shConnectionService.requestCompleted.observeForever(new Observer<Boolean>() {
                         @Override
@@ -222,17 +188,11 @@ public class LoginFragment extends Fragment {
                                 }
                                 else
                                 {
-                                    if (getContext() != null && getContext().getApplicationContext() != null) {
-                                        String s="Error getting data!!!";
-                                        SpannableString sstring=new SpannableString(s);
-                                        sstring.setSpan(new ForegroundColorSpan(Color.RED),0,s.length()-1, SpannableString.SPAN_MARK_POINT);
-                                        sstring.setSpan(new RelativeSizeSpan(2f),0,s.length()-1, SpannableString.SPAN_MARK_POINT);
-                                        Toast.makeText(getContext().getApplicationContext(), sstring, Toast.LENGTH_LONG).show();
-                                        main.connection_state.postValue(MainActivity.CONNECTED);
-                                        main.loginViewModel=null;
-                                        main.shConnectionService.result.setValue(null);
-                                        Navigation.findNavController(main, R.id.nav_host_fragment_content_main).navigate(R.id.action_login_fragment_self);
-                                    }
+                                    showToast("Error getting data!!!",Color.RED);
+                                    main.connection_state.postValue(MainActivity.CONNECTED);
+                                    main.loginViewModel=null;
+                                    main.shConnectionService.result.setValue(null);
+                                    Navigation.findNavController(main, R.id.nav_host_fragment_content_main).navigate(R.id.action_login_fragment_self);
                                 }
                                 main.shConnectionService.requestCompleted.removeObserver(this);
                             } else Log.i(TAG,"Request started");
@@ -304,28 +264,29 @@ public class LoginFragment extends Fragment {
         });
     }
 
-    private void updateUiWithUser(LoggedInUserView model) {
-//        String welcome = getString(R.string.welcome) + model.getDisplayName();
-        String welcome = "Welcome " + model.getDisplayName();
-        // TODO : initiate successful logged in experience
-        if (getContext() != null && getContext().getApplicationContext() != null) {
-            SpannableString sstring=new SpannableString(welcome);
-            sstring.setSpan(new ForegroundColorSpan(Color.BLACK),0,welcome.length(), SpannableString.SPAN_INCLUSIVE_EXCLUSIVE);
-        //    wstring.setSpan(new BackgroundColorSpan(Color.BLACK),0,welcome.length()-1, SpannableString.SPAN_MARK_POINT);
-            sstring.setSpan(new RelativeSizeSpan(1.5f),0,welcome.length(), SpannableString.SPAN_INCLUSIVE_EXCLUSIVE);
-            Toast toast=Toast.makeText(getContext().getApplicationContext(), sstring, Toast.LENGTH_LONG);
-            toast.show();
-        }
+    private void showToast(String text, int color) {
+        LayoutInflater inflater = getLayoutInflater();
+        View layout = inflater.inflate(R.layout.my_toast,
+                (ViewGroup) getActivity().findViewById(R.id.my_toast));
+        TextView textView = (TextView) layout.findViewById(R.id.toasttext);
+        if(color!=-1) textView.setTextColor(color);
+        textView.setText(text);
+        Toast toast = new Toast(getContext().getApplicationContext());
+        toast.setDuration(Toast.LENGTH_LONG);
+        toast.setView(layout);
+        toast.show();
+    }
+
+
+
+/*    private void showToast(LoggedInUserView model) {
+        showToast("Welcome " + model.getDisplayName(), 0);
     }
 
     private void showLoginFailed(@StringRes Integer errorString) {
-        if (getContext() != null && getContext().getApplicationContext() != null) {
-            Toast.makeText(
-                    getContext().getApplicationContext(),
-                    errorString,
-                    Toast.LENGTH_LONG).show();
-        }
-    }
+        if (getContext() != null && getContext().getApplicationContext() != null)
+            showToast("Failed to login "+errorString, Color.RED);
+    }*/
 
     @Override
     public void onDestroyView() {

@@ -23,12 +23,17 @@
         <entry key="..\:/Users/ilya/StudioProjects/test3/app/src/main/res/layout/fragment_devices.xml" value="0.1" />
         <entry key="..\:/Users/ilya/StudioProjects/test3/app/src/main/res/layout/fragment_devices_list.xml" value="0.1" />
         <entry key="..\:/Users/ilya/StudioProjects/test3/app/src/main/res/layout/fragment_home.xml" value="0.1" />
-        <entry key="..\:/Users/ilya/StudioProjects/test3/app/src/main/res/layout/fragment_login.xml" value="0.1" />
+        <entry key="..\:/Users/ilya/StudioProjects/test3/app/src/main/res/layout/fragment_login.xml" value="0.25" />
         <entry key="..\:/Users/ilya/StudioProjects/test3/app/src/main/res/layout/fragment_new_setting.xml" value="0.1453804347826087" />
+        <entry key="..\:/Users/ilya/StudioProjects/test3/app/src/main/res/layout/my_toast.xml" value="0.1" />
+        <entry key="..\:/Users/ilya/StudioProjects/test3/app/src/main/res/layout/my_toast_fail.xml" value="0.1" />
         <entry key="..\:/Users/ilya/StudioProjects/test3/app/src/main/res/layout/server_layout.xml" value="0.25" />
         <entry key="..\:/Users/ilya/StudioProjects/test3/app/src/main/res/menu/activity_main_drawer.xml" value="0.1796875" />
         <entry key="..\:/Users/ilya/StudioProjects/test3/app/src/main/res/menu/device_menu.xml" value="0.1796875" />
         <entry key="..\:/Users/ilya/StudioProjects/test3/app/src/main/res/menu/main.xml" value="0.1796875" />
+        <entry key="..\:/Users/ilya/StudioProjects/test3/app/src/main/res/raw/trusted_roots/drawable/img2_background.xml" value="0.1005" />
+        <entry key="..\:/Users/ilya/StudioProjects/test3/app/src/main/res/raw/trusted_roots/drawable/img2_foreground.xml" value="0.1005" />
+        <entry key="..\:/Users/ilya/StudioProjects/test3/app/src/main/res/xml/custom_textview.xml" value="0.1" />
         <entry key="..\:/Users/ilya/StudioProjects/test3/app/src/main/res/xml/empty.xml" value="0.1453804347826087" />
         <entry key="..\:/Users/ilya/StudioProjects/test3/app/src/main/res/xml/root_preferences.xml" value="0.1453804347826087" />
         <entry key="..\:/Users/ilya/StudioProjects/test3/app/src/main/res/xml/root_preferences1.xml" value="0.1453804347826087" />
